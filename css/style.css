@@ -47,11 +47,11 @@ body {
 }
 
 /* ───────────────────────────────
-   ノード（完全版）
+   ノード
 ─────────────────────────────── */
 .node {
   position: absolute;
-  z-index: 1; /* ← ノードは SVG より後ろ */
+  z-index: 1;
   padding: 8px 12px;
   border: 1px solid #333;
   user-select: none;
@@ -59,7 +59,9 @@ body {
   background: white;
 }
 
-/* 四角（アクション） */
+/* ───────────────────────────────
+   ノード種類
+─────────────────────────────── */
 .rect {
   border-radius: 4px;
   background: #e7f1ff;
@@ -67,19 +69,14 @@ body {
   max-width: 160px;
 }
 
-/* カプセル風（開始・終了） */
 .circle {
   background: #eaffea;
   border: 1px solid #4caf50;
   border-radius: 20px;
-  display: inline-block;
-  text-align: center;
-  white-space: normal;
   max-width: 160px;
   word-break: break-word;
 }
 
-/* 角丸四角（分岐） */
 .rounded {
   border-radius: 14px;
   background: #fff8d6;
@@ -96,12 +93,12 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 9999; /* ← SVG を最前面に */
-  pointer-events: none; /* ← SVG 全体は無効化 */
+  z-index: 9999;
+  /* pointer-events: none; ← 削除！！ */
 }
 
 #link-layer line {
-  pointer-events: stroke; /* ← 線だけタップ可能 */
+  pointer-events: stroke; /* ← これだけでOK */
   stroke: #333;
   stroke-width: 2;
 }
