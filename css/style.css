@@ -102,4 +102,9 @@ body {
   z-index: 10;          /* ← ノードより前に出す */
 }
 
+.selected {
+  outline: 2px solid red;
+}
+
+
 
