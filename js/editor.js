@@ -78,8 +78,7 @@ document.addEventListener("pointerdown", (e) => {
     return; // ← ノード処理はここで終わり
   }
 
-  // ▼ ノード以外（＝矢印 or 空白）を押したとき
-  // ここでは何もしない（リンクは line の pointerdown で処理）
+  // ▼ ノード以外（矢印 or 空白）はここでは何もしない
 });
 
 document.addEventListener("pointermove", (e) => {
@@ -168,9 +167,9 @@ function createLink(from, to) {
   line.setAttribute("stroke-width", "2");
   line.setAttribute("marker-end", "url(#arrow)");
 
-  // ▼ ここが重要：リンク選択イベントを line に付ける
+  // ▼ 矢印選択イベント
   line.addEventListener("pointerdown", (e) => {
-    e.stopPropagation(); // ノードの pointerdown と競合しないように
+    e.stopPropagation(); // ノード pointerdown と競合しない
 
     if (selectedLink === line) {
       line.classList.remove("selected");
@@ -210,23 +209,19 @@ function updateLinkPosition(from, to, line) {
 
   let x1, y1;
   if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 0) x1 = fx + fw;
-    else x1 = fx;
+    x1 = dx > 0 ? fx + fw : fx;
     y1 = cy1;
   } else {
-    if (dy > 0) y1 = fy + fh;
-    else y1 = fy;
+    y1 = dy > 0 ? fy + fh : fy;
     x1 = cx1;
   }
 
   let x2, y2;
   if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 0) x2 = tx;
-    else x2 = tx + tw;
+    x2 = dx > 0 ? tx : tx + tw;
     y2 = cy2;
   } else {
-    if (dy > 0) y2 = ty;
-    else y2 = ty + th; 
+    y2 = dy > 0 ? ty : ty + th;
     x2 = cx2;
   }
 
@@ -268,9 +263,7 @@ function deleteNode(node) {
   // 関連リンク削除
   links
     .filter(link => link.from === node || link.to === node)
-    .forEach(link => {
-      link.line.remove();
-    });
+    .forEach(link => link.line.remove());
 
   for (let i = links.length - 1; i >= 0; i--) {
     if (links[i].from === node || links[i].to === node) {
