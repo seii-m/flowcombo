@@ -36,12 +36,31 @@ let startY = 0;
 let moved = false;
 let tapTimer = null;
 
+let linkStartNode = null;
+const links = []; // { from, to, line }
+
+let selectedNode = null;
+let selectedLink = null;
+
 document.addEventListener("pointerdown", (e) => {
   const node = e.target.closest(".node");
+
+  // ▼ リンク線クリック時のために、line 選択は SVG 側でやる（後述）
+
   if (!node) return;
 
   // 編集中ならドラッグしない
   if (node.isContentEditable) return;
+
+  // ノード選択トグル（シングルタップで十分にする）
+  if (selectedNode === node) {
+    node.classList.remove("selected");
+    selectedNode = null;
+  } else {
+    if (selectedNode) selectedNode.classList.remove("selected");
+    selectedNode = node;
+    node.classList.add("selected");
+  }
 
   dragTarget = node;
   offsetX = e.offsetX;
@@ -129,21 +148,15 @@ function finishEdit(node) {
 // 矢印リンク管理
 // ───────────────────────────────
 
-let linkStartNode = null;
-const links = []; // { from, to, line }
-
 function handleLinkStart(node) {
-  // 編集中はリンク操作しない
   if (node.isContentEditable) return;
 
-  // 2つ目のノード → リンク作成
   if (linkStartNode && linkStartNode !== node) {
     createLink(linkStartNode, node);
     linkStartNode = null;
     return;
   }
 
-  // 1つ目のノード選択
   linkStartNode = node;
 }
 
@@ -154,6 +167,20 @@ function createLink(from, to) {
   line.setAttribute("stroke", "#333");
   line.setAttribute("stroke-width", "2");
   line.setAttribute("marker-end", "url(#arrow)");
+
+  // ▼ リンク選択（ここでイベントを付ける）
+  line.addEventListener("pointerdown", (e) => {
+    e.stopPropagation(); // ノード側 pointerdown と競合させない
+
+    if (selectedLink === line) {
+      line.classList.remove("selected");
+      selectedLink = null;
+    } else {
+      if (selectedLink) selectedLink.classList.remove("selected");
+      selectedLink = line;
+      line.classList.add("selected");
+    }
+  });
 
   svg.appendChild(line);
 
@@ -173,45 +200,36 @@ function updateLinkPosition(from, to, line) {
   const tw = to.offsetWidth;
   const th = to.offsetHeight;
 
-  // 中心座標
   const cx1 = fx + fw / 2;
   const cy1 = fy + fh / 2;
   const cx2 = tx + tw / 2;
   const cy2 = ty + th / 2;
 
-  // 方向ベクトル
   const dx = cx2 - cx1;
   const dy = cy2 - cy1;
 
-  // from 側の接続点
   let x1, y1;
-
   if (Math.abs(dx) > Math.abs(dy)) {
-    // 横方向が強い → 左右から出す
-    if (dx > 0) x1 = fx + fw;     // 右側
-    else x1 = fx;                 // 左側
+    if (dx > 0) x1 = fx + fw;
+    else x1 = fx;
     y1 = cy1;
   } else {
-    // 縦方向が強い → 上下から出す
-    if (dy > 0) y1 = fy + fh;     // 下側
-    else y1 = fy;                 // 上側
+    if (dy > 0) y1 = fy + fh;
+    else y1 = fy;
     x1 = cx1;
   }
 
-  // to 側の接続点
   let x2, y2;
-
   if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 0) x2 = tx;          // 左側
-    else x2 = tx + tw;            // 右側
+    if (dx > 0) x2 = tx;
+    else x2 = tx + tw;
     y2 = cy2;
   } else {
-    if (dy > 0) y2 = ty;          // 上側
-    else y2 = ty + th;            // 下側
+    if (dy > 0) y2 = ty;
+    else y2 = ty + th;
     x2 = cx2;
   }
 
-  // 線を更新
   line.setAttribute("x1", x1);
   line.setAttribute("y1", y1);
   line.setAttribute("x2", x2);
@@ -227,49 +245,18 @@ function updateLinksForNode(node) {
 }
 
 // ───────────────────────────────
-// ノード 矢印 削除
+// ノード / リンク削除（Deleteキー）
 // ───────────────────────────────
-let selectedNode = null;
-let selectedLink = null;
-
-// ノード選択（ダブルタップ）
-if (node) {
-  if (selectedNode === node) {
-    // 2回目のタップ → 選択解除
-    node.classList.remove("selected");
-    selectedNode = null;
-  } else {
-    // 新しく選択
-    if (selectedNode) selectedNode.classList.remove("selected");
-    selectedNode = node;
-    node.classList.add("selected");
-  }
-}
-
-line.addEventListener("pointerdown", (e) => {
-  e.stopPropagation(); // ノード選択と競合しないように
-
-  if (selectedLink === line) {
-    line.classList.remove("selected");
-    selectedLink = null;
-  } else {
-    if (selectedLink) selectedLink.classList.remove("selected");
-    selectedLink = line;
-    line.classList.add("selected");
-  }
-});
 
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Delete") return;
 
-  // ノード削除
   if (selectedNode) {
     deleteNode(selectedNode);
     selectedNode = null;
     return;
   }
 
-  // リンク削除
   if (selectedLink) {
     deleteLink(selectedLink);
     selectedLink = null;
@@ -278,29 +265,25 @@ document.addEventListener("keydown", (e) => {
 });
 
 function deleteNode(node) {
-  // そのノードに関係するリンクを削除
+  // 関連リンク削除
   links
     .filter(link => link.from === node || link.to === node)
     .forEach(link => {
       link.line.remove();
     });
 
-  // links 配列からも削除
   for (let i = links.length - 1; i >= 0; i--) {
     if (links[i].from === node || links[i].to === node) {
       links.splice(i, 1);
     }
   }
 
-  // ノード削除
   node.remove();
 }
 
 function deleteLink(line) {
-  // SVG から削除
   line.remove();
 
-  // links 配列から削除
   for (let i = links.length - 1; i >= 0; i--) {
     if (links[i].line === line) {
       links.splice(i, 1);
@@ -308,8 +291,3 @@ function deleteLink(line) {
     }
   }
 }
-
-
-
-
-
