@@ -34,6 +34,7 @@ let longPressTimer = null;
 let startX = 0;
 let startY = 0;
 let moved = false;
+let tapTimer = null;
 
 document.addEventListener("pointerdown", (e) => {
   const node = e.target.closest(".node");
@@ -50,10 +51,13 @@ document.addEventListener("pointerdown", (e) => {
   startY = e.pageY;
   moved = false;
 
-  // 長押しで編集開始（動かなかった場合のみ）
+  // ① 長押し編集
   longPressTimer = setTimeout(() => {
     if (!moved) startEdit(node);
   }, 500);
+
+  // ② 短いタップ編集（200ms以内に pointerup が来たら編集）
+  tapTimer = Date.now();
 });
 
 document.addEventListener("pointermove", (e) => {
@@ -76,9 +80,17 @@ document.addEventListener("pointermove", (e) => {
 
 document.addEventListener("pointerup", (e) => {
   clearTimeout(longPressTimer);
+
+  const node = e.target.closest(".node");
+
+  // ③ 短いタップ編集（200ms以内で、ほぼ動いてない）
+  if (node && !moved && Date.now() - tapTimer < 200) {
+    startEdit(node);
+  }
+
   dragTarget = null;
 
-  // 編集終了（外をタップして指を離したとき）
+  // 編集終了（外をタップ）
   if (!e.target.isContentEditable) {
     document.querySelectorAll(".node[contenteditable='true']").forEach(n => {
       finishEdit(n);
@@ -90,7 +102,6 @@ function startEdit(node) {
   node.contentEditable = "true";
   node.focus();
 
-  // キャレットを末尾へ
   const range = document.createRange();
   range.selectNodeContents(node);
   range.collapse(false);
