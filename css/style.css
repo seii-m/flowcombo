@@ -67,7 +67,6 @@ body {
 /* 四角（アクション） */
 .rect {
   border-radius: 4px;
-  height: 32px;
   background: #e7f1ff; /* 淡い青 */
   border: 1px solid #4a78c2;
 }
@@ -90,7 +89,6 @@ body {
 /* 角丸四角（分岐） */
 .rounded {
   border-radius: 14px;
-  height: 32px;
   background: #fff8d6; /* 淡い黄色 */
   border: 1px solid #c9a400;
 }
