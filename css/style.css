@@ -69,6 +69,7 @@ body {
   border-radius: 4px;
   background: #e7f1ff; /* 淡い青 */
   border: 1px solid #4a78c2;
+  max-width: 160px;
 }
 
 /* カプセル風（開始・終了） */
@@ -76,7 +77,6 @@ body {
   background: #eaffea; /* 淡い緑 */
   border: 1px solid #4caf50;
   border-radius: 20px; /* カプセル感 */
-  padding: 6px 14px;
   display: inline-block;
   text-align: center;
   white-space: normal;
@@ -89,4 +89,5 @@ body {
   border-radius: 14px;
   background: #fff8d6; /* 淡い黄色 */
   border: 1px solid #c9a400;
+  max-width: 160px;
 }
