@@ -108,9 +108,10 @@ function startEdit(node) {
   });
 }
 
-// 編集終了（外をタップしたら）
-document.addEventListener("pointerdown", (e) => {
-  if (dragTarget === null && !e.target.isContentEditable) {
+// 編集終了（外をタップして指を離したら）
+document.addEventListener("pointerup", (e) => {
+  // 編集中のノードがあり、かつタップした場所がノード以外なら終了
+  if (!e.target.isContentEditable) {
     document.querySelectorAll(".node[contenteditable='true']").forEach(n => {
       finishEdit(n);
     });
