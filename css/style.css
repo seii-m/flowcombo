@@ -43,3 +43,32 @@ body {
   text-align: center;
   line-height: 60px;
 }
+
+.node {
+  position: absolute;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #333;
+  user-select: none;
+  touch-action: none;
+}
+
+/* 四角 */
+.rect {
+  border-radius: 4px;
+}
+
+/* 丸 */
+.circle {
+  border-radius: 50%;
+  padding: 12px;
+}
+
+/* 菱形（45度回転） */
+.diamond {
+  transform: rotate(45deg);
+  padding: 12px;
+}
+
+
+
