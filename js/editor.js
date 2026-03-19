@@ -60,22 +60,9 @@ document.addEventListener("pointerup", () => {
 });
 
 // ───────────────────────────────
-// テキスト編集（インライン編集）
+// テキスト編集（インライン編集・改行対応）
 // ───────────────────────────────
 
-document.addEventListener("pointerdown", (e) => {
-  // 既存のドラッグ処理
-  if (e.target.classList.contains("node")) {
-    // 編集中ならドラッグしない
-    if (e.target.isContentEditable) return;
-
-    dragTarget = e.target;
-    offsetX = e.offsetX;
-    offsetY = e.offsetY;
-  }
-});
-
-// ノードをダブルタップ/ダブルクリックで編集開始
 document.addEventListener("dblclick", (e) => {
   if (e.target.classList.contains("node")) {
     startEdit(e.target);
@@ -89,7 +76,7 @@ document.addEventListener("pointerdown", (e) => {
   if (e.target.classList.contains("node")) {
     longPressTimer = setTimeout(() => {
       startEdit(e.target);
-    }, 500); // 0.5秒長押しで編集
+    }, 500);
   }
 });
 
@@ -113,21 +100,27 @@ function startEdit(node) {
   // 編集中はドラッグ禁止
   dragTarget = null;
 
-  // Enterで確定
+  // Enter は改行として扱う（デフォルト動作）
   node.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      finishEdit(node);
-    }
+    // Enter 単体 → 改行（そのまま）
+    // Shift+Enter → 改行（そのまま）
+    // 何もしない
   });
 }
 
-// 編集終了
+// 編集終了（外をタップしたら）
+document.addEventListener("pointerdown", (e) => {
+  if (dragTarget === null && !e.target.isContentEditable) {
+    document.querySelectorAll(".node[contenteditable='true']").forEach(n => {
+      finishEdit(n);
+    });
+  }
+});
+
 function finishEdit(node) {
   node.contentEditable = "false";
   node.blur();
 }
-
 
 
 
