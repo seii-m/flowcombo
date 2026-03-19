@@ -132,11 +132,6 @@ document.addEventListener("pointermove", (e) => {
     dragTarget.style.top = (e.pageY - offsetY) + "px";
     updateLinksForNode(dragTarget);
   }
-  
-  if (moved && longPressTimer) {
-    clearTimeout(longPressTimer.editTimer);
-    clearTimeout(longPressTimer.deleteTimer);
-  }
 });
 
 // ───────────────────────────────
