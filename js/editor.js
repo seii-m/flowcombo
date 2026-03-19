@@ -51,6 +51,9 @@ document.addEventListener("pointerdown", (e) => {
 });
 
 document.addEventListener("pointermove", (e) => {
+  // ドラッグが始まったら長押し判定をキャンセル
+  clearTimeout(longPressTimer);
+
   if (dragTarget && !dragTarget.isContentEditable) {
     dragTarget.style.left = (e.pageX - offsetX) + "px";
     dragTarget.style.top = (e.pageY - offsetY) + "px";
