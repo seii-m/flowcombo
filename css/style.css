@@ -94,11 +94,11 @@ body {
   width: 100%;
   height: 100%;
   z-index: 9999;
-  /* pointer-events: none; ← 削除！！ */
+  pointer-events: none;
 }
 
 #link-layer line {
-  pointer-events: stroke; /* ← これだけでOK */
+  pointer-events: stroke;
   stroke: #333;
   stroke-width: 2;
 }
