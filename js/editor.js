@@ -226,7 +226,7 @@ function updateLinkPosition(from, to, line) {
     y2 = cy2;
   } else {
     if (dy > 0) y2 = ty;
-    else y2 = ty + th;
+    else y2 = ty + th; 
     x2 = cx2;
   }
 
