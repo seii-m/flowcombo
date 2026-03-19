@@ -64,22 +64,25 @@ body {
   touch-action: none;
 }
 
-/* 四角（通常技） */
+/* 四角（アクション） */
 .rect {
   border-radius: 4px;
   background: #e7f1ff; /* 淡い青 */
   border: 1px solid #4a78c2;
 }
 
-/* 丸（開始・終了） */
+/* カプセル（開始・終了） */
 .circle {
-  border-radius: 50%;
-  padding: 12px;
   background: #eaffea; /* 淡い緑 */
   border: 1px solid #4caf50;
+  border-radius: 20px;
+  padding: 6px 14px;
+  display: inline-block;
+  text-align: center;
+  white-space: nowrap;
 }
 
-/* 分岐ノード（角丸四角） */
+/* 角丸四角（分岐） */
 .rounded {
   border-radius: 14px;
   background: #fff8d6; /* 淡い黄色 */
