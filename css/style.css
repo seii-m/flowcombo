@@ -75,11 +75,15 @@ body {
 .circle {
   background: #eaffea; /* 淡い緑 */
   border: 1px solid #4caf50;
-  border-radius: 20px;
-  padding: 6px 14px;
-  display: inline-block;
+  width: 80px;        /* 横幅を固定 */
+  height: 32px;       /* 高さを固定 */
+  border-radius: 16px; /* カプセル形状（高さの半分） */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   white-space: nowrap;
+  padding: 0; /* 余計な丸みを作らないために padding はゼロ */
 }
 
 /* 角丸四角（分岐） */
