@@ -77,7 +77,7 @@ document.addEventListener("pointerdown", (e) => {
       selectedNode = node;
       node.classList.add("selected");
     }
-
+  
     // ドラッグ準備
     dragTarget = node;
     offsetX = e.offsetX;
@@ -86,12 +86,12 @@ document.addEventListener("pointerdown", (e) => {
     startY = e.pageY;
     moved = false;
     tapTimer = Date.now();
-
+  
     // 編集タイマー（500ms）
     const editTimer = setTimeout(() => {
       if (!moved) startEdit(node);
     }, 500);
-
+  
     // 削除タイマー（800ms）
     const deleteTimer = setTimeout(() => {
       if (!moved) {
@@ -99,12 +99,13 @@ document.addEventListener("pointerdown", (e) => {
         selectedNode = null;
       }
     }, 800);
-
+  
+    // タイマーをまとめて保持
     longPressTimer = { editTimer, deleteTimer };
-
+  
     // リンク処理
     handleLinkStart(node);
-
+  
     return;
   }
 });
@@ -131,6 +132,11 @@ document.addEventListener("pointermove", (e) => {
     dragTarget.style.top = (e.pageY - offsetY) + "px";
     updateLinksForNode(dragTarget);
   }
+  
+  if (moved && longPressTimer) {
+    clearTimeout(longPressTimer.editTimer);
+    clearTimeout(longPressTimer.deleteTimer);
+  }
 });
 
 // ───────────────────────────────
@@ -142,7 +148,7 @@ document.addEventListener("pointerup", (e) => {
     clearTimeout(longPressTimer.deleteTimer);
   }
   longPressTimer = null;
-
+  
   const node = e.target.closest(".node");
 
   // 短タップ編集
