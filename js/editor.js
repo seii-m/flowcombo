@@ -50,7 +50,7 @@ document.addEventListener("pointerdown", (e) => {
   startY = e.pageY;
   moved = false;
 
-  // 長押しで編集開始
+  // 長押しで編集開始（動かなかった場合のみ）
   longPressTimer = setTimeout(() => {
     if (!moved) startEdit(node);
   }, 500);
@@ -85,6 +85,24 @@ document.addEventListener("pointerup", (e) => {
     });
   }
 });
+
+function startEdit(node) {
+  node.contentEditable = "true";
+  node.focus();
+
+  // キャレットを末尾へ
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function finishEdit(node) {
+  node.contentEditable = "false";
+  node.blur();
+}
 
 // ───────────────────────────────
 // 編集開始 / 編集終了
