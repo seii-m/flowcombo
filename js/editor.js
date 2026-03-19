@@ -188,16 +188,26 @@ function handleLinkStart(node) {
 }
 
 function createLink(from, to) {
+  const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+  // 透明の太い当たり判定
+  const hit = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  hit.setAttribute("stroke", "transparent");
+  hit.setAttribute("stroke-width", "20"); // ← 当たり判定だけ太くする
+  hit.setAttribute("pointer-events", "stroke"); // ← 透明でも当たる
+  group.appendChild(hit);
+
+  // 見える細い線
   const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
   line.setAttribute("stroke", "#333");
   line.setAttribute("stroke-width", "2");
   line.setAttribute("marker-end", "url(#arrow)");
+  group.appendChild(line);
 
-  // ▼ 矢印短タップ選択＋長押し削除
-  line.addEventListener("pointerdown", (e) => {
+  // ▼ 選択処理（hit に付ける）
+  hit.addEventListener("pointerdown", (e) => {
     e.stopPropagation();
 
-    // 選択
     if (selectedLink === line) {
       line.classList.remove("selected");
       selectedLink = null;
@@ -213,12 +223,14 @@ function createLink(from, to) {
       selectedLink = null;
     }, 700);
 
-    line.addEventListener("pointerup", () => clearTimeout(timer), { once: true });
+    hit.addEventListener("pointerup", () => clearTimeout(timer), { once: true });
   });
 
-  svg.appendChild(line);
-  links.push({ from, to, line });
+  svg.appendChild(group);
+  links.push({ from, to, line, hit });
+
   updateLinkPosition(from, to, line);
+  updateLinkPosition(from, to, hit);
 }
 
 function updateLinkPosition(from, to, line) {
