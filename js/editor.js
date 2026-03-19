@@ -1,3 +1,25 @@
+// SVG を canvas の最前面に配置する
+const canvas = document.getElementById("canvas");
+
+const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+svg.setAttribute("id", "link-layer");
+svg.style.position = "absolute";
+svg.style.top = "0";
+svg.style.left = "0";
+svg.style.width = "100%";
+svg.style.height = "100%";
+svg.style.zIndex = "9999";
+
+svg.innerHTML = `
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L6,3 Z" fill="#333" />
+    </marker>
+  </defs>
+`;
+
+canvas.appendChild(svg); // ← ノードより後に追加されるので最前面になる
+
 // ───────────────────────────────
 // ノード追加ボタン
 // ───────────────────────────────
