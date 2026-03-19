@@ -3,6 +3,9 @@ body {
   font-family: sans-serif;
 }
 
+/* ───────────────────────────────
+   ツールバー（横スクロール＋タップ領域拡大）
+─────────────────────────────── */
 #toolbar {
   display: flex;
   gap: 8px;
@@ -15,8 +18,8 @@ body {
 #toolbar button {
   flex: 0 0 auto;
   position: relative;
-  padding: 6px 10px;
-  font-size: 14px;
+  padding: 8px 12px;
+  font-size: 16px;
 }
 
 #toolbar button::after {
@@ -26,9 +29,12 @@ body {
   bottom: -8px;
   left: -8px;
   right: -8px;
-  pointer-events: none;
+  pointer-events: none; /* ← 透明タップ領域を有効化 */
 }
 
+/* ───────────────────────────────
+   キャンバス
+─────────────────────────────── */
 #canvas {
   width: 100%;
   height: calc(100vh - 120px);
@@ -37,6 +43,9 @@ body {
   overflow: hidden;
 }
 
+/* ───────────────────────────────
+   広告枠
+─────────────────────────────── */
 #ad-area {
   height: 60px;
   background: #ddd;
@@ -44,6 +53,9 @@ body {
   line-height: 60px;
 }
 
+/* ───────────────────────────────
+   ノード共通
+─────────────────────────────── */
 .node {
   position: absolute;
   padding: 8px 12px;
@@ -53,22 +65,20 @@ body {
   touch-action: none;
 }
 
-/* 四角 */
+/* 四角（通常技） */
 .rect {
   border-radius: 4px;
 }
 
-/* 丸 */
+/* 丸（開始・終了） */
 .circle {
   border-radius: 50%;
   padding: 12px;
 }
 
-/* 菱形（45度回転） */
-.diamond {
-  transform: rotate(45deg);
-  padding: 12px;
+/* 分岐ノード（角丸四角） */
+.rounded {
+  border-radius: 14px;
+  background: #fffef5; /* 少しだけ色を変えて視認性UP */
+  border: 1px solid #666;
 }
-
-
-
