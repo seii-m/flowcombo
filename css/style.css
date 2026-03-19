@@ -13,6 +13,9 @@ body {
   overflow-x: auto;
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
+  background: #fff;
+  z-index: 10000;
+  position: relative;
 }
 
 #toolbar button {
@@ -44,15 +47,16 @@ body {
 }
 
 /* ───────────────────────────────
-   ノード（統合版）
+   ノード（完全版）
 ─────────────────────────────── */
 .node {
   position: absolute;
-  z-index: 1; /* ← ここに統合 */
+  z-index: 1; /* ← ノードは SVG より後ろ */
   padding: 8px 12px;
   border: 1px solid #333;
   user-select: none;
   touch-action: none;
+  background: white;
 }
 
 /* 四角（アクション） */
@@ -90,13 +94,16 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100% !important;
-  height: 100% !important;
-  z-index: 9999; /* ← ノードより前 */
+  width: 100%;
+  height: 100%;
+  z-index: 9999; /* ← SVG を最前面に */
+  pointer-events: none; /* ← SVG 全体は無効化 */
 }
 
 #link-layer line {
-  pointer-events: stroke; /* ← これが重要 */
+  pointer-events: stroke; /* ← 線だけタップ可能 */
+  stroke: #333;
+  stroke-width: 2;
 }
 
 line.selected {
