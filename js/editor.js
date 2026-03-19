@@ -168,9 +168,9 @@ function createLink(from, to) {
   line.setAttribute("stroke-width", "2");
   line.setAttribute("marker-end", "url(#arrow)");
 
-  // ▼ リンク選択（ここでイベントを付ける）
+  // ▼ ここが重要：リンク選択イベントを line に付ける
   line.addEventListener("pointerdown", (e) => {
-    e.stopPropagation(); // ノード側 pointerdown と競合させない
+    e.stopPropagation(); // ノードの pointerdown と競合しないように
 
     if (selectedLink === line) {
       line.classList.remove("selected");
