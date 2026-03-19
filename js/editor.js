@@ -163,11 +163,55 @@ function createLink(from, to) {
 }
 
 function updateLinkPosition(from, to, line) {
-  const x1 = from.offsetLeft + from.offsetWidth / 2;
-  const y1 = from.offsetTop + from.offsetHeight / 2;
-  const x2 = to.offsetLeft + to.offsetWidth / 2;
-  const y2 = to.offsetTop + to.offsetHeight / 2;
+  const fx = from.offsetLeft;
+  const fy = from.offsetTop;
+  const fw = from.offsetWidth;
+  const fh = from.offsetHeight;
 
+  const tx = to.offsetLeft;
+  const ty = to.offsetTop;
+  const tw = to.offsetWidth;
+  const th = to.offsetHeight;
+
+  // 中心座標
+  const cx1 = fx + fw / 2;
+  const cy1 = fy + fh / 2;
+  const cx2 = tx + tw / 2;
+  const cy2 = ty + th / 2;
+
+  // 方向ベクトル
+  const dx = cx2 - cx1;
+  const dy = cy2 - cy1;
+
+  // from 側の接続点
+  let x1, y1;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // 横方向が強い → 左右から出す
+    if (dx > 0) x1 = fx + fw;     // 右側
+    else x1 = fx;                 // 左側
+    y1 = cy1;
+  } else {
+    // 縦方向が強い → 上下から出す
+    if (dy > 0) y1 = fy + fh;     // 下側
+    else y1 = fy;                 // 上側
+    x1 = cx1;
+  }
+
+  // to 側の接続点
+  let x2, y2;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 0) x2 = tx;          // 左側
+    else x2 = tx + tw;            // 右側
+    y2 = cy2;
+  } else {
+    if (dy > 0) y2 = ty;          // 上側
+    else y2 = ty + th;            // 下側
+    x2 = cx2;
+  }
+
+  // 線を更新
   line.setAttribute("x1", x1);
   line.setAttribute("y1", y1);
   line.setAttribute("x2", x2);
