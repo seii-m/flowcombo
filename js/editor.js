@@ -14,7 +14,7 @@ svg.style.zIndex = "9999";
 
 svg.innerHTML = `
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+    <marker id="arrow" markerWidth="30" markerHeight="30" refX="6" refY="3" orient="auto">
       <path d="M0,0 L0,6 L6,3 Z" fill="#333" />
     </marker>
   </defs>
