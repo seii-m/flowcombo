@@ -24,13 +24,16 @@ function createNode(type) {
 }
 
 // ───────────────────────────────
-// ドラッグ & 長押し編集（競合しない完全版）
+// ドラッグ & 長押し編集
 // ───────────────────────────────
 
 let dragTarget = null;
 let offsetX = 0;
 let offsetY = 0;
 let longPressTimer = null;
+let startX = 0;
+let startY = 0;
+let moved = false;
 
 document.addEventListener("pointerdown", (e) => {
   const node = e.target.closest(".node");
@@ -39,22 +42,33 @@ document.addEventListener("pointerdown", (e) => {
   // 編集中ならドラッグしない
   if (node.isContentEditable) return;
 
-  // 長押しで編集開始
-  longPressTimer = setTimeout(() => {
-    startEdit(node);
-  }, 500);
-
-  // ドラッグ開始
   dragTarget = node;
   offsetX = e.offsetX;
   offsetY = e.offsetY;
+
+  startX = e.pageX;
+  startY = e.pageY;
+  moved = false;
+
+  // 長押しで編集開始
+  longPressTimer = setTimeout(() => {
+    if (!moved) startEdit(node);
+  }, 500);
 });
 
 document.addEventListener("pointermove", (e) => {
-  // ドラッグが始まったら長押し判定をキャンセル
-  clearTimeout(longPressTimer);
+  if (!dragTarget) return;
 
-  if (dragTarget && !dragTarget.isContentEditable) {
+  const dx = e.pageX - startX;
+  const dy = e.pageY - startY;
+
+  // 3px以上動いたらドラッグ開始 → 長押しキャンセル
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+    moved = true;
+    clearTimeout(longPressTimer);
+  }
+
+  if (moved && !dragTarget.isContentEditable) {
     dragTarget.style.left = (e.pageX - offsetX) + "px";
     dragTarget.style.top = (e.pageY - offsetY) + "px";
   }
