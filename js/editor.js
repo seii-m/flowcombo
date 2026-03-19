@@ -32,4 +32,27 @@ document.getElementById("add-rect").onclick = () => createNode("rect");
 document.getElementById("add-circle").onclick = () => createNode("circle");
 document.getElementById("add-diamond").onclick = () => createNode("diamond");
 
+let dragTarget = null;
+let offsetX = 0;
+let offsetY = 0;
+
+document.addEventListener("pointerdown", (e) => {
+  if (e.target.classList.contains("node")) {
+    dragTarget = e.target;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+  }
+});
+
+document.addEventListener("pointermove", (e) => {
+  if (dragTarget) {
+    dragTarget.style.left = (e.pageX - offsetX) + "px";
+    dragTarget.style.top = (e.pageY - offsetY) + "px";
+  }
+});
+
+document.addEventListener("pointerup", () => {
+  dragTarget = null;
+});
+
 
