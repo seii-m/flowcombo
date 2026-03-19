@@ -277,6 +277,37 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+function deleteNode(node) {
+  // そのノードに関係するリンクを削除
+  links
+    .filter(link => link.from === node || link.to === node)
+    .forEach(link => {
+      link.line.remove();
+    });
+
+  // links 配列からも削除
+  for (let i = links.length - 1; i >= 0; i--) {
+    if (links[i].from === node || links[i].to === node) {
+      links.splice(i, 1);
+    }
+  }
+
+  // ノード削除
+  node.remove();
+}
+
+function deleteLink(line) {
+  // SVG から削除
+  line.remove();
+
+  // links 配列から削除
+  for (let i = links.length - 1; i >= 0; i--) {
+    if (links[i].line === line) {
+      links.splice(i, 1);
+      break;
+    }
+  }
+}
 
 
 
