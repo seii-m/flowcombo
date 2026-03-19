@@ -1,4 +1,6 @@
-// SVG を canvas の最前面に配置する
+// ───────────────────────────────
+// SVG を canvas の最前面に配置
+// ───────────────────────────────
 const canvas = document.getElementById("canvas");
 
 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -18,19 +20,14 @@ svg.innerHTML = `
   </defs>
 `;
 
-canvas.appendChild(svg); // ← ノードより後に追加されるので最前面になる
+canvas.appendChild(svg);
 
 // ───────────────────────────────
-// ノード追加ボタン
+// ノード追加
 // ───────────────────────────────
-
 document.getElementById("add-rect").onclick = () => createNode("rect");
 document.getElementById("add-circle").onclick = () => createNode("circle");
 document.getElementById("add-rounded").onclick = () => createNode("rounded");
-
-// ───────────────────────────────
-// ノード生成
-// ───────────────────────────────
 
 function createNode(type) {
   const node = document.createElement("div");
@@ -42,34 +39,36 @@ function createNode(type) {
   if (type === "circle") node.textContent = "開始";
   if (type === "rounded") node.textContent = "分岐";
 
-  document.getElementById("canvas").appendChild(node);
+  canvas.appendChild(node);
 }
 
 // ───────────────────────────────
-// ドラッグ & 編集（短タップ / 長押し）
+// 状態管理
 // ───────────────────────────────
-
 let dragTarget = null;
 let offsetX = 0;
 let offsetY = 0;
-let longPressTimer = null;
 let startX = 0;
 let startY = 0;
 let moved = false;
 let tapTimer = null;
 
-let linkStartNode = null;
-const links = []; // { from, to, line }
+let longPressTimer = null; // { editTimer, deleteTimer }
 
+let linkStartNode = null;
+const links = [];
 let selectedNode = null;
 let selectedLink = null;
 
+// ───────────────────────────────
+// pointerdown
+// ───────────────────────────────
 document.addEventListener("pointerdown", (e) => {
   const node = e.target.closest(".node");
 
-  // ▼ ノードを押したときだけノード処理
+  // ▼ ノードを押した
   if (node) {
-    // ノード選択
+    // 選択
     if (selectedNode === node) {
       node.classList.remove("selected");
       selectedNode = null;
@@ -79,53 +78,70 @@ document.addEventListener("pointerdown", (e) => {
       node.classList.add("selected");
     }
 
-    // ドラッグ開始
+    // ドラッグ準備
     dragTarget = node;
     offsetX = e.offsetX;
     offsetY = e.offsetY;
     startX = e.pageX;
     startY = e.pageY;
     moved = false;
+    tapTimer = Date.now();
 
-    // 長押し編集
-    longPressTimer = setTimeout(() => {
+    // 編集タイマー（500ms）
+    const editTimer = setTimeout(() => {
       if (!moved) startEdit(node);
     }, 500);
 
-    tapTimer = Date.now();
+    // 削除タイマー（800ms）
+    const deleteTimer = setTimeout(() => {
+      if (!moved) {
+        deleteNode(node);
+        selectedNode = null;
+      }
+    }, 800);
+
+    longPressTimer = { editTimer, deleteTimer };
 
     // リンク処理
     handleLinkStart(node);
 
-    return; // ← ノード処理はここで終わり
+    return;
   }
-
-  // ▼ ノード以外（矢印 or 空白）はここでは何もしない
 });
 
+// ───────────────────────────────
+// pointermove
+// ───────────────────────────────
 document.addEventListener("pointermove", (e) => {
   if (!dragTarget) return;
 
   const dx = e.pageX - startX;
   const dy = e.pageY - startY;
 
-  // 3px以上動いたらドラッグ開始
   if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
     moved = true;
-    clearTimeout(longPressTimer);
+    if (longPressTimer) {
+      clearTimeout(longPressTimer.editTimer);
+      clearTimeout(longPressTimer.deleteTimer);
+    }
   }
 
   if (moved && !dragTarget.isContentEditable) {
     dragTarget.style.left = (e.pageX - offsetX) + "px";
     dragTarget.style.top = (e.pageY - offsetY) + "px";
-
-    // リンク追従
     updateLinksForNode(dragTarget);
   }
 });
 
+// ───────────────────────────────
+// pointerup
+// ───────────────────────────────
 document.addEventListener("pointerup", (e) => {
-  clearTimeout(longPressTimer);
+  if (longPressTimer) {
+    clearTimeout(longPressTimer.editTimer);
+    clearTimeout(longPressTimer.deleteTimer);
+  }
+  longPressTimer = null;
 
   const node = e.target.closest(".node");
 
@@ -136,28 +152,18 @@ document.addEventListener("pointerup", (e) => {
 
   dragTarget = null;
 
-  // 編集終了（外タップ）
+  // 編集終了
   if (!e.target.isContentEditable) {
-    document.querySelectorAll(".node[contenteditable='true']").forEach(n => {
-      finishEdit(n);
-    });
+    document.querySelectorAll(".node[contenteditable='true']").forEach(n => finishEdit(n));
   }
 });
 
 // ───────────────────────────────
-// 編集開始 / 編集終了
+// 編集
 // ───────────────────────────────
-
 function startEdit(node) {
   node.contentEditable = "true";
   node.focus();
-
-  const range = document.createRange();
-  range.selectNodeContents(node);
-  range.collapse(false);
-  const sel = window.getSelection();
-  sel.removeAllRanges();
-  sel.addRange(range);
 }
 
 function finishEdit(node) {
@@ -166,9 +172,8 @@ function finishEdit(node) {
 }
 
 // ───────────────────────────────
-// 矢印リンク管理
+// リンク作成
 // ───────────────────────────────
-
 function handleLinkStart(node) {
   if (node.isContentEditable) return;
 
@@ -182,17 +187,16 @@ function handleLinkStart(node) {
 }
 
 function createLink(from, to) {
-  const svg = document.getElementById("link-layer");
-
   const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
   line.setAttribute("stroke", "#333");
   line.setAttribute("stroke-width", "2");
   line.setAttribute("marker-end", "url(#arrow)");
 
-  // ▼ 矢印選択イベント
+  // ▼ 矢印短タップ選択＋長押し削除
   line.addEventListener("pointerdown", (e) => {
-    e.stopPropagation(); // ノード pointerdown と競合しない
+    e.stopPropagation();
 
+    // 選択
     if (selectedLink === line) {
       line.classList.remove("selected");
       selectedLink = null;
@@ -201,12 +205,18 @@ function createLink(from, to) {
       selectedLink = line;
       line.classList.add("selected");
     }
+
+    // 長押し削除
+    const timer = setTimeout(() => {
+      deleteLink(line);
+      selectedLink = null;
+    }, 700);
+
+    line.addEventListener("pointerup", () => clearTimeout(timer), { once: true });
   });
 
   svg.appendChild(line);
-
   links.push({ from, to, line });
-
   updateLinkPosition(from, to, line);
 }
 
@@ -262,35 +272,15 @@ function updateLinksForNode(node) {
 }
 
 // ───────────────────────────────
-// ノード / リンク削除（Deleteキー）
+// 削除
 // ───────────────────────────────
-
-document.addEventListener("keydown", (e) => {
-  if (e.key !== "Delete") return;
-
-  if (selectedNode) {
-    deleteNode(selectedNode);
-    selectedNode = null;
-    return;
-  }
-
-  if (selectedLink) {
-    deleteLink(selectedLink);
-    selectedLink = null;
-    return;
-  }
-});
-
 function deleteNode(node) {
-  // 関連リンク削除
   links
     .filter(link => link.from === node || link.to === node)
     .forEach(link => link.line.remove());
 
   for (let i = links.length - 1; i >= 0; i--) {
-    if (links[i].from === node || links[i].to === node) {
-      links.splice(i, 1);
-    }
+    if (links[i].from === node || links[i].to === node) links.splice(i, 1);
   }
 
   node.remove();
@@ -298,7 +288,6 @@ function deleteNode(node) {
 
 function deleteLink(line) {
   line.remove();
-
   for (let i = links.length - 1; i >= 0; i--) {
     if (links[i].line === line) {
       links.splice(i, 1);
