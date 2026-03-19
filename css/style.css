@@ -68,17 +68,21 @@ body {
 /* 四角（通常技） */
 .rect {
   border-radius: 4px;
+  background: #e7f1ff; /* 淡い青 */
+  border: 1px solid #4a78c2;
 }
 
 /* 丸（開始・終了） */
 .circle {
   border-radius: 50%;
   padding: 12px;
+  background: #eaffea; /* 淡い緑 */
+  border: 1px solid #4caf50;
 }
 
 /* 分岐ノード（角丸四角） */
 .rounded {
   border-radius: 14px;
-  background: #fffef5; /* 少しだけ色を変えて視認性UP */
-  border: 1px solid #666;
+  background: #fff8d6; /* 淡い黄色 */
+  border: 1px solid #c9a400;
 }
