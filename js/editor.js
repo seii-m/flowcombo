@@ -45,41 +45,41 @@ let selectedLink = null;
 document.addEventListener("pointerdown", (e) => {
   const node = e.target.closest(".node");
 
-  // ▼ リンク線クリック時のために、line 選択は SVG 側でやる（後述）
+  // ▼ ノードを押したときだけノード処理
+  if (node) {
+    // ノード選択
+    if (selectedNode === node) {
+      node.classList.remove("selected");
+      selectedNode = null;
+    } else {
+      if (selectedNode) selectedNode.classList.remove("selected");
+      selectedNode = node;
+      node.classList.add("selected");
+    }
 
-  if (!node) return;
+    // ドラッグ開始
+    dragTarget = node;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+    startX = e.pageX;
+    startY = e.pageY;
+    moved = false;
 
-  // 編集中ならドラッグしない
-  if (node.isContentEditable) return;
+    // 長押し編集
+    longPressTimer = setTimeout(() => {
+      if (!moved) startEdit(node);
+    }, 500);
 
-  // ノード選択トグル（シングルタップで十分にする）
-  if (selectedNode === node) {
-    node.classList.remove("selected");
-    selectedNode = null;
-  } else {
-    if (selectedNode) selectedNode.classList.remove("selected");
-    selectedNode = node;
-    node.classList.add("selected");
+    tapTimer = Date.now();
+
+    // リンク処理
+    handleLinkStart(node);
+
+    return; // ← ノード処理はここで終わり
   }
 
-  dragTarget = node;
-  offsetX = e.offsetX;
-  offsetY = e.offsetY;
-
-  startX = e.pageX;
-  startY = e.pageY;
-  moved = false;
-
-  // 長押し編集
-  longPressTimer = setTimeout(() => {
-    if (!moved) startEdit(node);
-  }, 500);
-
-  // 短タップ編集
-  tapTimer = Date.now();
-
-  // リンク処理
-  handleLinkStart(node);
+  // ▼ ノード以外（＝矢印 or 空白）を押したとき
+  // ここでは何もしない（リンクは line の pointerdown で処理）
 });
 
 document.addEventListener("pointermove", (e) => {
