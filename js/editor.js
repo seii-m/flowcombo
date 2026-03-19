@@ -16,8 +16,9 @@ function createNode(type) {
   node.style.left = "50px";
   node.style.top = "50px";
 
-  if (type === "rect") node.textContent = "四角";
-  if (type === "circle") node.textContent = "丸";
+  // 役割ベースの初期テキスト
+  if (type === "rect") node.textContent = "アクション";
+  if (type === "circle") node.textContent = "開始";
   if (type === "rounded") node.textContent = "分岐";
 
   document.getElementById("canvas").appendChild(node);
