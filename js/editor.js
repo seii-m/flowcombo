@@ -225,3 +225,60 @@ function updateLinksForNode(node) {
     }
   });
 }
+
+// ───────────────────────────────
+// ノード 矢印 削除
+// ───────────────────────────────
+let selectedNode = null;
+let selectedLink = null;
+
+// ノード選択（ダブルタップ）
+if (node) {
+  if (selectedNode === node) {
+    // 2回目のタップ → 選択解除
+    node.classList.remove("selected");
+    selectedNode = null;
+  } else {
+    // 新しく選択
+    if (selectedNode) selectedNode.classList.remove("selected");
+    selectedNode = node;
+    node.classList.add("selected");
+  }
+}
+
+line.addEventListener("pointerdown", (e) => {
+  e.stopPropagation(); // ノード選択と競合しないように
+
+  if (selectedLink === line) {
+    line.classList.remove("selected");
+    selectedLink = null;
+  } else {
+    if (selectedLink) selectedLink.classList.remove("selected");
+    selectedLink = line;
+    line.classList.add("selected");
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Delete") return;
+
+  // ノード削除
+  if (selectedNode) {
+    deleteNode(selectedNode);
+    selectedNode = null;
+    return;
+  }
+
+  // リンク削除
+  if (selectedLink) {
+    deleteLink(selectedLink);
+    selectedLink = null;
+    return;
+  }
+});
+
+
+
+
+
+
