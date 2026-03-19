@@ -5,16 +5,27 @@ body {
 
 #toolbar {
   display: flex;
-  overflow-x: auto;
   gap: 8px;
   padding: 8px;
+  overflow-x: auto;
   white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
 }
 
 #toolbar button {
   flex: 0 0 auto;
-  padding: 10px 14px;
-  font-size: 16px;
+  position: relative;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+#toolbar button::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  left: -8px;
+  right: -8px;
 }
 
 #canvas {
