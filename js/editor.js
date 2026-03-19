@@ -18,3 +18,18 @@ document.getElementById("import-json").onclick = () => {
   console.log("Import");
 };
 
+function createNode(type) {
+  const node = document.createElement("div");
+  node.classList.add("node", type);
+  node.style.left = "50px";
+  node.style.top = "50px";
+  node.textContent = type; // とりあえず仮の文字
+
+  document.getElementById("canvas").appendChild(node);
+}
+
+document.getElementById("add-rect").onclick = () => createNode("rect");
+document.getElementById("add-circle").onclick = () => createNode("circle");
+document.getElementById("add-diamond").onclick = () => createNode("diamond");
+
+
