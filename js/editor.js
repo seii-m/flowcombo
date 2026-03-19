@@ -193,8 +193,8 @@ function createLink(from, to) {
   // 透明の太い当たり判定
   const hit = document.createElementNS("http://www.w3.org/2000/svg", "line");
   hit.setAttribute("stroke", "transparent");
-  hit.setAttribute("stroke-width", "20"); // ← 当たり判定だけ太くする
-  hit.setAttribute("pointer-events", "stroke"); // ← 透明でも当たる
+  hit.setAttribute("stroke-width", "20");
+  hit.setAttribute("pointer-events", "stroke");
   group.appendChild(hit);
 
   // 見える細い線
@@ -227,6 +227,7 @@ function createLink(from, to) {
   });
 
   svg.appendChild(group);
+
   links.push({ from, to, line, hit });
 
   updateLinkPosition(from, to, line);
