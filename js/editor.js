@@ -137,3 +137,49 @@ function finishEdit(node) {
   node.contentEditable = "false";
   node.blur();
 }
+
+// ───────────────────────────────
+// 矢印リンク（最小テンプレ）
+// ───────────────────────────────
+
+let linkStartNode = null;
+
+document.addEventListener("pointerdown", (e) => {
+  const node = e.target.closest(".node");
+  if (!node) return;
+
+  // 編集中はリンク操作しない
+  if (node.isContentEditable) return;
+
+  // すでに開始ノードが選ばれている → 2つ目を選んだらリンク作成
+  if (linkStartNode && linkStartNode !== node) {
+    createLink(linkStartNode, node);
+    linkStartNode = null;
+    return;
+  }
+
+  // 1つ目のノードを選択
+  linkStartNode = node;
+});
+
+function createLink(from, to) {
+  const svg = document.getElementById("link-layer");
+
+  const x1 = from.offsetLeft + from.offsetWidth / 2;
+  const y1 = from.offsetTop + from.offsetHeight / 2;
+  const x2 = to.offsetLeft + to.offsetWidth / 2;
+  const y2 = to.offsetTop + to.offsetHeight / 2;
+
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", x1);
+  line.setAttribute("y1", y1);
+  line.setAttribute("x2", x2);
+  line.setAttribute("y2", y2);
+  line.setAttribute("stroke", "#333");
+  line.setAttribute("stroke-width", "2");
+  line.setAttribute("marker-end", "url(#arrow)");
+
+  svg.appendChild(line);
+}
+
+
