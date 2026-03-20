@@ -211,6 +211,14 @@ html, body {
   pointer-events: auto;
 }
 
+.arrow.selected-delete .arrow-line {
+  background: #e53935;
+}
+
+.arrow.selected-delete .arrow-line::after {
+  border-left-color: #e53935;
+}
+
 .arrow-line {
   position: absolute;
   height: 2px;
