@@ -241,49 +241,63 @@ function updateArrowPosition(arrow) {
   const rectTo = arrow.toNode.getBoundingClientRect();
 
   // ノード中心
-  let x1 = rectFrom.left + rectFrom.width / 2;
-  let y1 = rectFrom.top + rectFrom.height / 2;
-  let x2 = rectTo.left + rectTo.width / 2;
-  let y2 = rectTo.top + rectTo.height / 2;
+  let cx1 = rectFrom.left + rectFrom.width / 2;
+  let cy1 = rectFrom.top + rectFrom.height / 2;
+  let cx2 = rectTo.left + rectTo.width / 2;
+  let cy2 = rectTo.top + rectTo.height / 2;
 
-  // ノードの縁まで押し出す
-  const dx = x2 - x1;
-  const dy = y2 - y1;
+  // ベクトル
+  const dx = cx2 - cx1;
+  const dy = cy2 - cy1;
   const len = Math.hypot(dx, dy) || 1;
   const nx = dx / len;
   const ny = dy / len;
 
-  // ここで「どれくらい外に出すか」を調整（ノード半径っぽく）
+  // ノード外周まで押し出す
   const fromOffset = Math.min(rectFrom.width, rectFrom.height) / 2 + 4;
   const toOffset   = Math.min(rectTo.width, rectTo.height) / 2 + 4;
-  
-  x1 += nx * fromOffset;
-  y1 += ny * fromOffset;
-  x2 -= nx * toOffset;
-  y2 -= ny * toOffset;
 
-  // キャンバス座標系に変換
+  let x1 = cx1 + nx * fromOffset;
+  let y1 = cy1 + ny * fromOffset;
+  let x2 = cx2 - nx * toOffset;
+  let y2 = cy2 - ny * toOffset;
+
+  // キャンバス座標へ
   x1 -= rectCanvas.left - canvas.scrollLeft;
   y1 -= rectCanvas.top - canvas.scrollTop;
   x2 -= rectCanvas.left - canvas.scrollLeft;
   y2 -= rectCanvas.top - canvas.scrollTop;
 
-  const minX = Math.min(x1, x2);
-  const minY = Math.min(y1, y2);
-  const width = Math.abs(x2 - x1) || 1;
-  const height = Math.abs(y2 - y1) || 1;
+  let minX = Math.min(x1, x2);
+  let minY = Math.min(y1, y2);
+  let width = Math.abs(x2 - x1);
+  let height = Math.abs(y2 - y1);
+
+  // ★ 縦線補正：幅が細すぎる場合は最低 20px にする
+  const MIN_W = 20;
+  if (width < MIN_W) {
+    const center = (x1 + x2) / 2;
+    minX = center - MIN_W / 2;
+    width = MIN_W;
+
+    // line の x 座標を補正
+    const offset = (x1 < x2) ? (x1 - minX) : (x2 - minX);
+    arrow.line.setAttribute("x1", offset);
+    arrow.line.setAttribute("x2", offset);
+  } else {
+    arrow.line.setAttribute("x1", x1 < x2 ? 0 : width);
+    arrow.line.setAttribute("x2", x1 < x2 ? width : 0);
+  }
 
   arrow.wrapper.style.left = `${minX}px`;
   arrow.wrapper.style.top = `${minY}px`;
   arrow.wrapper.style.width = `${width}px`;
-  arrow.wrapper.style.height = `${height}px`;
+  arrow.wrapper.style.height = `${height || 1}px`;
 
   arrow.svg.setAttribute("width", width);
-  arrow.svg.setAttribute("height", height);
+  arrow.svg.setAttribute("height", height || 1);
 
-  arrow.line.setAttribute("x1", x1 < x2 ? 0 : width);
   arrow.line.setAttribute("y1", y1 < y2 ? 0 : height);
-  arrow.line.setAttribute("x2", x1 < x2 ? width : 0);
   arrow.line.setAttribute("y2", y1 < y2 ? height : 0);
 }
 
