@@ -408,3 +408,64 @@ function loadFromData(data) {
     });
   }
 }
+
+/* ─────────────────────────────
+   ツリー構造の構築
+────────────────────────────── */
+
+function buildTree() {
+  const children = new Map();
+  nodes.forEach(n => children.set(n, []));
+
+  arrows.forEach(a => {
+    children.get(a.fromNode).push(a.toNode);
+  });
+
+  return children;
+}
+
+function findRoots(children) {
+  const allChildren = new Set();
+  children.forEach(list => list.forEach(c => allChildren.add(c)));
+  return nodes.filter(n => !allChildren.has(n));
+}
+
+/* ─────────────────────────────
+   ツリー自動整列
+────────────────────────────── */
+
+document.getElementById("align-btn").addEventListener("click", autoAlignTree);
+
+function autoAlignTree() {
+  const children = buildTree();
+  const roots = findRoots(children);
+
+  let startX = canvas.clientWidth / 2 + canvas.scrollLeft;
+  let startY = 40 + canvas.scrollTop;
+
+  roots.forEach(root => {
+    layoutSubtree(root, startX, startY, children);
+    startY += 200;
+  });
+}
+
+function layoutSubtree(node, x, y, children) {
+  node.style.left = `${x}px`;
+  node.style.top = `${y}px`;
+  updateArrowsForNode(node);
+
+  const kids = children.get(node);
+  if (!kids || kids.length === 0) return;
+
+  const totalWidth = (kids.length - 1) * 200;
+  let startX = x - totalWidth / 2;
+
+  kids.forEach(child => {
+    layoutSubtree(child, startX, y + 120, children);
+    startX += 200;
+  });
+}
+
+
+
+
