@@ -18,6 +18,7 @@ let deleteSelected = null;
 
 modeButtons.forEach(btn => {
   btn.addEventListener("click", () => {
+    clearNodeSelections();
     const newMode = btn.dataset.mode;
 
     // 同じボタンを押したら閲覧に戻す
