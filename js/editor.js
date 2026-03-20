@@ -149,6 +149,8 @@ canvas.addEventListener("pointermove", e => {
   if (mode !== "move") return;
   if (!dragState) return;
 
+  e.preventDefault(); // ← これが超重要（スマホで画面が動かなくなる）
+   
   const rect = canvas.getBoundingClientRect();
 
   const { node, offsetX, offsetY } = dragState;
@@ -168,8 +170,9 @@ canvas.addEventListener("pointerup", () => {
 });
 
 function startMove(node, e) {
-  const rect = node.getBoundingClientRect();
+  e.preventDefault(); // ← スマホのスクロールを止める
 
+   const rect = node.getBoundingClientRect();
   dragState = {
     node,
     offsetX: e.clientX - rect.left,
