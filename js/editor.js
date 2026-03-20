@@ -539,6 +539,59 @@ function layoutSubtreeHorizontal(node, x, y, children) {
   });
 }
 
+function computeDepths(children) {
+  const depth = new Map();
+  const roots = findRoots(children);
+
+  const queue = [];
+  roots.forEach(r => {
+    depth.set(r, 0);
+    queue.push(r);
+  });
+
+  while (queue.length > 0) {
+    const node = queue.shift();
+    const d = depth.get(node);
+
+    const kids = children.get(node);
+    kids.forEach(k => {
+      if (!depth.has(k) || depth.get(k) < d + 1) {
+        depth.set(k, d + 1);
+        queue.push(k);
+      }
+    });
+  }
+
+  return depth;
+}
+
+function autoAlignTree() {
+  const children = buildTree();
+  const depth = computeDepths(children);
+
+  // depth → ノード配列
+  const columns = new Map();
+  nodes.forEach(n => {
+    const d = depth.get(n) || 0;
+    if (!columns.has(d)) columns.set(d, []);
+    columns.get(d).push(n);
+  });
+
+  const colWidth = 140;
+  const rowHeight = 70;
+
+  columns.forEach((list, d) => {
+    list.forEach((node, i) => {
+      const x = 40 + d * colWidth;
+      const y = 40 + i * rowHeight;
+
+      node.style.left = `${x}px`;
+      node.style.top = `${y}px`;
+      updateArrowsForNode(node);
+    });
+  });
+}
+      
 function saveData() {
   const data = {
     version: 1,
