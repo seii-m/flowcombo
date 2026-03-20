@@ -254,9 +254,9 @@ function updateArrowPosition(arrow) {
   const ny = dy / len;
 
   // ここで「どれくらい外に出すか」を調整（ノード半径っぽく）
-  const fromOffset = Math.min(rectFrom.width, rectFrom.height) / 2;
-  const toOffset   = Math.min(rectTo.width, rectTo.height) / 2;
-
+  const fromOffset = Math.min(rectFrom.width, rectFrom.height) / 2 + 4;
+  const toOffset   = Math.min(rectTo.width, rectTo.height) / 2 + 4;
+  
   x1 += nx * fromOffset;
   y1 += ny * fromOffset;
   x2 -= nx * toOffset;
