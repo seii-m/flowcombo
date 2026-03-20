@@ -563,6 +563,7 @@ function autoAlignTree() {
     updateArrowsForNode(node);
   });
   saveData();
+  }
 }
 
 function findParents(node) {
