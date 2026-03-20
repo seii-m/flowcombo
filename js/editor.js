@@ -149,11 +149,10 @@ canvas.addEventListener("pointermove", e => {
   if (mode !== "move" || !dragState) return;
   e.preventDefault();
 
-  const rectCanvas = canvas.getBoundingClientRect();
-  const { node, offsetX, offsetY } = dragState;
+  const { node, offsetX, offsetY, canvasLeft, canvasTop } = dragState;
 
-  const x = e.clientX - rectCanvas.left + canvas.scrollLeft - offsetX;
-  const y = e.clientY - rectCanvas.top + canvas.scrollTop - offsetY;
+  const x = e.clientX - canvasLeft + canvas.scrollLeft - offsetX;
+  const y = e.clientY - canvasTop + canvas.scrollTop - offsetY;
 
   node.style.left = `${x}px`;
   node.style.top = `${y}px`;
@@ -173,8 +172,10 @@ function startMove(node, e) {
 
   dragState = {
     node,
-    offsetX: e.clientX - rectNode.left + canvas.scrollLeft - rectCanvas.left,
-    offsetY: e.clientY - rectNode.top + canvas.scrollTop - rectCanvas.top
+    offsetX: e.clientX - rectNode.left,
+    offsetY: e.clientY - rectNode.top,
+    canvasLeft: rectCanvas.left,
+    canvasTop: rectCanvas.top
   };
 }
 
