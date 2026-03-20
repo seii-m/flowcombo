@@ -240,23 +240,46 @@ function updateArrowPosition(arrow) {
   const rectFrom = arrow.fromNode.getBoundingClientRect();
   const rectTo = arrow.toNode.getBoundingClientRect();
 
-  const x1 = rectFrom.left + rectFrom.width / 2 - rectCanvas.left + canvas.scrollLeft;
-  const y1 = rectFrom.top + rectFrom.height / 2 - rectCanvas.top + canvas.scrollTop;
-  const x2 = rectTo.left + rectTo.width / 2 - rectCanvas.left + canvas.scrollLeft;
-  const y2 = rectTo.top + rectTo.height / 2 - rectCanvas.top + canvas.scrollTop;
+  // ノード中心
+  let x1 = rectFrom.left + rectFrom.width / 2;
+  let y1 = rectFrom.top + rectFrom.height / 2;
+  let x2 = rectTo.left + rectTo.width / 2;
+  let y2 = rectTo.top + rectTo.height / 2;
+
+  // ノードの縁まで押し出す
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = dx / len;
+  const ny = dy / len;
+
+  // ここで「どれくらい外に出すか」を調整（ノード半径っぽく）
+  const fromOffset = Math.min(rectFrom.width, rectFrom.height) / 2;
+  const toOffset   = Math.min(rectTo.width, rectTo.height) / 2;
+
+  x1 += nx * fromOffset;
+  y1 += ny * fromOffset;
+  x2 -= nx * toOffset;
+  y2 -= ny * toOffset;
+
+  // キャンバス座標系に変換
+  x1 -= rectCanvas.left - canvas.scrollLeft;
+  y1 -= rectCanvas.top - canvas.scrollTop;
+  x2 -= rectCanvas.left - canvas.scrollLeft;
+  y2 -= rectCanvas.top - canvas.scrollTop;
 
   const minX = Math.min(x1, x2);
   const minY = Math.min(y1, y2);
-  const width = Math.abs(x2 - x1);
-  const height = Math.abs(y2 - y1);
+  const width = Math.abs(x2 - x1) || 1;
+  const height = Math.abs(y2 - y1) || 1;
 
   arrow.wrapper.style.left = `${minX}px`;
   arrow.wrapper.style.top = `${minY}px`;
-  arrow.wrapper.style.width = `${width || 1}px`;
-  arrow.wrapper.style.height = `${height || 1}px`;
+  arrow.wrapper.style.width = `${width}px`;
+  arrow.wrapper.style.height = `${height}px`;
 
-  arrow.svg.setAttribute("width", width || 1);
-  arrow.svg.setAttribute("height", height || 1);
+  arrow.svg.setAttribute("width", width);
+  arrow.svg.setAttribute("height", height);
 
   arrow.line.setAttribute("x1", x1 < x2 ? 0 : width);
   arrow.line.setAttribute("y1", y1 < y2 ? 0 : height);
