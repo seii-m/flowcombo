@@ -6,6 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
+<link rel="manifest" href="manifest.json">
+
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("js/sw.js");
+  }
+</script>
 <body>
 
   <!-- ツールバー -->
