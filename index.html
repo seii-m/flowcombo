@@ -1,26 +1,37 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>FlowCombo - フロコン</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <title>FlowCombo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <div id="toolbar">
-    <button id="add-rect">アクション</button>
-    <button id="add-circle">開始/終了</button>
-    <button id="add-rounded">分岐</button>
-    <button id="export-json">Export</button>
-    <button id="import-json">Import</button>
+    <div class="toolbar-group">
+      <button class="btn node-btn" data-node-type="start">始動</button>
+      <button class="btn node-btn" data-node-type="action">行動</button>
+      <button class="btn node-btn" data-node-type="check">確認</button>
+    </div>
+
+    <div class="toolbar-group">
+      <button class="btn mode-btn" data-mode="view">閲覧</button>
+      <button class="btn mode-btn" data-mode="edit">編集</button>
+      <button class="btn mode-btn" data-mode="move">移動</button>
+      <button class="btn mode-btn" data-mode="link">矢印</button>
+      <button class="btn mode-btn danger" data-mode="delete">削除</button>
+    </div>
+
+    <div class="toolbar-group">
+      <button class="btn io-btn" id="import-btn">読込</button>
+      <button class="btn io-btn" id="export-btn">保存</button>
+    </div>
   </div>
 
   <div id="canvas"></div>
 
-  <div id="ad-area">
-    <!-- 広告枠（後でAdSenseを入れる） -->
-  </div>
+  <textarea id="import-area" placeholder="ここに JSON を貼り付けて読込ボタン"></textarea>
 
-  <script src="js/editor.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
