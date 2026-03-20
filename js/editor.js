@@ -66,16 +66,15 @@ function addNode(type) {
 
   node.dataset.id = crypto.randomUUID();
   node.dataset.type = type;
-  
+
   node.textContent =
     type === "start" ? "始動" :
     type === "action" ? "行動" :
     "確認";
 
-  // キャンバス中央に追加
-  const rect = canvas.getBoundingClientRect();
-  const x = rect.width / 2 - 50 + canvas.scrollLeft;
-  const y = rect.height / 2 - 20 + canvas.scrollTop;
+  // ★ ユーザーが今見ている位置の中心に追加
+  const x = canvas.scrollLeft + (canvas.clientWidth / 2) - 50;
+  const y = canvas.scrollTop + (canvas.clientHeight / 2) - 20;
 
   node.style.left = `${x}px`;
   node.style.top = `${y}px`;
@@ -84,6 +83,9 @@ function addNode(type) {
   nodes.push(node);
 
   node.addEventListener("pointerdown", onNodePointerDown);
+
+  ensureCanvasSize(x, y);
+  saveData();
 }
 
 /* ─────────────────────────────
