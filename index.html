@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+
+  <!-- ツールバー -->
   <div id="toolbar">
     <div class="toolbar-group">
       <button class="btn node-btn" data-node-type="start">始動</button>
@@ -28,16 +30,18 @@
     </div>
   </div>
 
+  <!-- キャンバス -->
   <div id="canvas"></div>
 
-  <textarea id="import-area" placeholder="ここに JSON を貼り付けて読込ボタン"></textarea>
-
-  <script src="css/editor.js"></script>
-
+  <!-- 広告欄 -->
   <div id="ad-area">
-    <!-- ここに広告コード（AdSense など） -->
+    <!-- AdSense などをここに入れる -->
     広告
   </div>
 
+  <!-- JSON 読込欄 -->
+  <textarea id="import-area" placeholder="ここに JSON を貼り付けて読込ボタン"></textarea>
+
+  <script src="js/editer.js"></script>
 </body>
 </html>
