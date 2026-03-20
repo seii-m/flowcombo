@@ -285,39 +285,23 @@ function updateArrowPosition(arrow) {
   const rectFrom = arrow.fromNode.getBoundingClientRect();
   const rectTo = arrow.toNode.getBoundingClientRect();
 
-  // ノード中心
-  let cx1 = rectFrom.left + rectFrom.width / 2;
-  let cy1 = rectFrom.top + rectFrom.height / 2;
-  let cx2 = rectTo.left + rectTo.width / 2;
-  let cy2 = rectTo.top + rectTo.height / 2;
+  const scale = currentScale || 1; // ← zoom 値
 
-  // ベクトル
-  const dx = cx2 - cx1;
-  const dy = cy2 - cy1;
-  const len = Math.hypot(dx, dy) || 1;
-  const nx = dx / len;
-  const ny = dy / len;
+  // ノード外周の交点を取得
+  const p1 = getRectEdgePoint(rectFrom, rectTo.left, rectTo.top);
+  const p2 = getRectEdgePoint(rectTo, rectFrom.left, rectFrom.top);
 
-  // ノード外周まで押し出す
-  const fromOffset = Math.min(rectFrom.width, rectFrom.height) / 2 + 4;
-  const toOffset   = Math.min(rectTo.width, rectTo.height) / 2 + 4;
+  // キャンバス座標へ（scale 補正）
+  const x1 = (p1.x - rectCanvas.left) / scale + canvas.scrollLeft;
+  const y1 = (p1.y - rectCanvas.top) / scale + canvas.scrollTop;
+  const x2 = (p2.x - rectCanvas.left) / scale + canvas.scrollLeft;
+  const y2 = (p2.y - rectCanvas.top) / scale + canvas.scrollTop;
 
-  let x1 = cx1 + nx * fromOffset;
-  let y1 = cy1 + ny * fromOffset;
-  let x2 = cx2 - nx * toOffset;
-  let y2 = cy2 - ny * toOffset;
-
-  // キャンバス座標へ
-  x1 -= rectCanvas.left - canvas.scrollLeft;
-  y1 -= rectCanvas.top - canvas.scrollTop;
-  x2 -= rectCanvas.left - canvas.scrollLeft;
-  y2 -= rectCanvas.top - canvas.scrollTop;
-
-  // CSS 矢印の描画
-  const dx2 = x2 - x1;
-  const dy2 = y2 - y1;
-  const length = Math.sqrt(dx2*dx2 + dy2*dy2);
-  const angle = Math.atan2(dy2, dx2) * 180 / Math.PI;
+  // CSS 矢印描画
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const length = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
   arrow.wrapper.style.left = `${x1}px`;
   arrow.wrapper.style.top = `${y1}px`;
@@ -698,6 +682,45 @@ function createArrowElement() {
   return arrow;
 }
 
+function getNodeEdgePoint(node, targetX, targetY) {
+  const rect = node.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  const dx = targetX - cx;
+  const dy = targetY - cy;
+
+  const angle = Math.atan2(dy, dx);
+
+  const radius = Math.min(rect.width, rect.height) / 2;
+
+  return {
+    x: cx + Math.cos(angle) * radius,
+    y: cy + Math.sin(angle) * radius
+  };
+}
+
+function getRectEdgePoint(rect, tx, ty) {
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  const dx = tx - cx;
+  const dy = ty - cy;
+
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
+
+  // どちらの辺に当たるか判定
+  const scale = Math.min(
+    (rect.width / 2) / absDx,
+    (rect.height / 2) / absDy
+  );
+
+  return {
+    x: cx + dx * scale,
+    y: cy + dy * scale
+  };
+}
 
 
 
