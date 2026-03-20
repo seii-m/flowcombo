@@ -112,7 +112,7 @@ html, body {
 #canvas {
   position: relative;
   width: 2000px;
-  height: 2000px;
+  height: 900px;
   overflow: scroll; /* ← canvas 内部の縦横スクロール */
   touch-action: pan-x pan-y;
   transform-origin: 0 0;
