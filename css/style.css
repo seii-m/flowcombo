@@ -218,10 +218,10 @@ html, body {
   content: "";
   position: absolute;
   right: -6px;
-  top: -4px;
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  border-left: 6px solid #333;
+  top: -3px;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 10px solid #333;
 }
 
 /* ─────────────────────────────
