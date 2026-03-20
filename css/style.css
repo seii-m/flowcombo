@@ -33,6 +33,16 @@ body {
   gap: 8px;
 }
 
+#flow-title {
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: transparent;
+  outline: none;
+  min-width: 120px;
+}
+
 /* ─────────────────────────────
    ボタン
 ────────────────────────────── */
