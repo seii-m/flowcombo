@@ -46,6 +46,13 @@ function setMode(newMode) {
   clearDeleteSelection();
   finishEditAll();
   linkStartNode = null;
+
+  // ★ 矢印の pointer-events 切り替え
+  if (mode === "delete") {
+    arrows.forEach(a => a.wrapper.classList.add("can-select"));
+  } else {
+    arrows.forEach(a => a.wrapper.classList.remove("can-select"));
+  }
 }
 
 /* ─────────────────────────────
