@@ -670,6 +670,20 @@ canvas.addEventListener("touchend", () => {
   lastDistance = null;
 });
 
+function updateArrow(x1, y1, x2, y2, arrowEl) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const length = Math.sqrt(dx*dx + dy*dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+  const line = arrowEl.querySelector(".arrow-line");
+
+  arrowEl.style.left = `${x1}px`;
+  arrowEl.style.top = `${y1}px`;
+
+  line.style.width = `${length}px`;
+  line.style.transform = `rotate(${angle}deg)`;
+}
 
 
 
