@@ -670,17 +670,29 @@ canvas.addEventListener("touchend", () => {
   lastDistance = null;
 });
 
-function updateArrow(x1, y1, x2, y2, arrowEl) {
+function createArrowElement() {
+  const arrow = document.createElement("div");
+  arrow.classList.add("arrow");
+
+  const line = document.createElement("div");
+  line.classList.add("arrow-line");
+
+  arrow.appendChild(line);
+  canvas.appendChild(arrow);
+
+  return arrow;
+}
+
+function updateArrowPosition(arrow, x1, y1, x2, y2) {
   const dx = x2 - x1;
   const dy = y2 - y1;
   const length = Math.sqrt(dx*dx + dy*dy);
   const angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
-  const line = arrowEl.querySelector(".arrow-line");
+  arrow.style.left = `${x1}px`;
+  arrow.style.top = `${y1}px`;
 
-  arrowEl.style.left = `${x1}px`;
-  arrowEl.style.top = `${y1}px`;
-
+  const line = arrow.querySelector(".arrow-line");
   line.style.width = `${length}px`;
   line.style.transform = `rotate(${angle}deg)`;
 }
