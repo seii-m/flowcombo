@@ -306,37 +306,17 @@ function updateArrowPosition(arrow) {
   x2 -= rectCanvas.left - canvas.scrollLeft;
   y2 -= rectCanvas.top - canvas.scrollTop;
 
-  let minX = Math.min(x1, x2);
-  let minY = Math.min(y1, y2);
-  let width = Math.abs(x2 - x1);
-  let height = Math.abs(y2 - y1);
+  // CSS 矢印の描画
+  const dx2 = x2 - x1;
+  const dy2 = y2 - y1;
+  const length = Math.sqrt(dx2*dx2 + dy2*dy2);
+  const angle = Math.atan2(dy2, dx2) * 180 / Math.PI;
 
-  // ★ 縦線補正：幅が細すぎる場合は最低 20px にする
-  const MIN_W = 20;
-  if (width < MIN_W) {
-    const center = (x1 + x2) / 2;
-    minX = center - MIN_W / 2;
-    width = MIN_W;
+  arrow.wrapper.style.left = `${x1}px`;
+  arrow.wrapper.style.top = `${y1}px`;
 
-    // line の x 座標を補正
-    const offset = (x1 < x2) ? (x1 - minX) : (x2 - minX);
-    arrow.line.setAttribute("x1", offset);
-    arrow.line.setAttribute("x2", offset);
-  } else {
-    arrow.line.setAttribute("x1", x1 < x2 ? 0 : width);
-    arrow.line.setAttribute("x2", x1 < x2 ? width : 0);
-  }
-
-  arrow.wrapper.style.left = `${minX}px`;
-  arrow.wrapper.style.top = `${minY}px`;
-  arrow.wrapper.style.width = `${width}px`;
-  arrow.wrapper.style.height = `${height || 1}px`;
-
-  arrow.svg.setAttribute("width", width);
-  arrow.svg.setAttribute("height", height || 1);
-
-  arrow.line.setAttribute("y1", y1 < y2 ? 0 : height);
-  arrow.line.setAttribute("y2", y1 < y2 ? height : 0);
+  arrow.line.style.width = `${length}px`;
+  arrow.line.style.transform = `rotate(${angle}deg)`;
 }
 
 function updateArrowsForNode(node) {
@@ -659,54 +639,6 @@ function createArrowElement() {
 
   return arrow;
 }
-
-function updateArrowPosition(arrow) {
-  const rectCanvas = canvas.getBoundingClientRect();
-  const rectFrom = arrow.fromNode.getBoundingClientRect();
-  const rectTo = arrow.toNode.getBoundingClientRect();
-
-  // ノード中心
-  let cx1 = rectFrom.left + rectFrom.width / 2;
-  let cy1 = rectFrom.top + rectFrom.height / 2;
-  let cx2 = rectTo.left + rectTo.width / 2;
-  let cy2 = rectTo.top + rectTo.height / 2;
-
-  // ベクトル
-  const dx = cx2 - cx1;
-  const dy = cy2 - cy1;
-  const len = Math.hypot(dx, dy) || 1;
-  const nx = dx / len;
-  const ny = dy / len;
-
-  // ノード外周まで押し出す
-  const fromOffset = Math.min(rectFrom.width, rectFrom.height) / 2 + 4;
-  const toOffset   = Math.min(rectTo.width, rectTo.height) / 2 + 4;
-
-  let x1 = cx1 + nx * fromOffset;
-  let y1 = cy1 + ny * fromOffset;
-  let x2 = cx2 - nx * toOffset;
-  let y2 = cy2 - ny * toOffset;
-
-  // キャンバス座標へ
-  x1 -= rectCanvas.left - canvas.scrollLeft;
-  y1 -= rectCanvas.top - canvas.scrollTop;
-  x2 -= rectCanvas.left - canvas.scrollLeft;
-  y2 -= rectCanvas.top - canvas.scrollTop;
-
-  // CSS 矢印の描画
-  const dx2 = x2 - x1;
-  const dy2 = y2 - y1;
-  const length = Math.sqrt(dx2*dx2 + dy2*dy2);
-  const angle = Math.atan2(dy2, dx2) * 180 / Math.PI;
-
-  arrow.wrapper.style.left = `${x1}px`;
-  arrow.wrapper.style.top = `${y1}px`;
-
-  arrow.line.style.width = `${length}px`;
-  arrow.line.style.transform = `rotate(${angle}deg)`;
-}
-
-
 
 
 
