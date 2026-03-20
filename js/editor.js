@@ -545,12 +545,30 @@ function autoAlignTree() {
   const children = buildTree();
   const roots = findRoots(children);
 
-  let startX = canvas.clientWidth / 2 + canvas.scrollLeft;
-  let startY = 40 + canvas.scrollTop;
+  let startX = 40 + canvas.scrollLeft;
+  let startY = canvas.clientHeight / 2 + canvas.scrollTop;
 
   roots.forEach(root => {
-    layoutSubtree(root, startX, startY, children);
-    startY += 200;
+    layoutSubtreeHorizontal(root, startX, startY, children);
+    startX += 300; // 次のルートは右へ
+  });
+}
+
+function layoutSubtreeHorizontal(node, x, y, children) {
+  node.style.left = `${x}px`;
+  node.style.top = `${y}px`;
+  updateArrowsForNode(node);
+  ensureCanvasSize(x, y);
+
+  const kids = children.get(node);
+  if (!kids || kids.length === 0) return;
+
+  const totalHeight = (kids.length - 1) * 150;
+  let startY = y - totalHeight / 2;
+
+  kids.forEach(child => {
+    layoutSubtreeHorizontal(child, x + 200, startY, children);
+    startY += 150;
   });
 }
 
@@ -615,6 +633,48 @@ function migrateData(data) {
 }
 
 window.addEventListener("load", loadData);
+window.addEventListener("load", () => {
+  canvas.scrollLeft = 1200;
+  canvas.scrollTop = 1200;
+});
+
+
+function ensureCanvasSize(x, y) {
+  const margin = 500; // 余裕
+  if (x + margin > canvas.scrollWidth) {
+    canvas.style.width = (x + margin) + "px";
+  }
+  if (y + margin > canvas.scrollHeight) {
+    canvas.style.height = (y + margin) + "px";
+  }
+}
+
+let scale = 1;
+let lastDistance = null;
+
+canvas.addEventListener("touchmove", e => {
+  if (e.touches.length === 2) {
+    e.preventDefault();
+
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.hypot(dx, dy);
+
+    if (lastDistance !== null) {
+      const delta = dist - lastDistance;
+      scale += delta * 0.002;
+      scale = Math.min(Math.max(scale, 0.3), 2.5); // 最小0.3〜最大2.5倍
+      canvas.style.transform = `scale(${scale})`;
+    }
+
+    lastDistance = dist;
+  }
+});
+
+canvas.addEventListener("touchend", () => {
+  lastDistance = null;
+});
+
 
 
 
