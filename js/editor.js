@@ -146,18 +146,14 @@ function finishEditAll() {
 ────────────────────────────── */
 
 canvas.addEventListener("pointermove", e => {
-  if (mode !== "move") return;
-  if (!dragState) return;
+  if (mode !== "move" || !dragState) return;
+  e.preventDefault();
 
-  e.preventDefault(); // ← これが超重要（スマホで画面が動かなくなる）
-   
-  const rect = canvas.getBoundingClientRect();
-
+  const rectCanvas = canvas.getBoundingClientRect();
   const { node, offsetX, offsetY } = dragState;
 
-  // canvas 基準の座標に変換
-  const x = e.clientX - rect.left - offsetX + canvas.scrollLeft;
-  const y = e.clientY - rect.top - offsetY + canvas.scrollTop;
+  const x = e.clientX - rectCanvas.left + canvas.scrollLeft - offsetX;
+  const y = e.clientY - rectCanvas.top + canvas.scrollTop - offsetY;
 
   node.style.left = `${x}px`;
   node.style.top = `${y}px`;
@@ -177,8 +173,8 @@ function startMove(node, e) {
 
   dragState = {
     node,
-    offsetX: e.clientX - rectNode.left + (rectCanvas.left - canvas.scrollLeft),
-    offsetY: e.clientY - rectNode.top + (rectCanvas.top - canvas.scrollTop)
+    offsetX: e.clientX - rectNode.left + canvas.scrollLeft - rectCanvas.left,
+    offsetY: e.clientY - rectNode.top + canvas.scrollTop - rectCanvas.top
   };
 }
 
