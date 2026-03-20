@@ -56,6 +56,7 @@ nodeButtons.forEach(btn => {
   btn.addEventListener("click", () => {
     const type = btn.dataset.nodeType;
     addNode(type);
+    saveData();
   });
 });
 
@@ -167,6 +168,7 @@ function onNodeBlur(e) {
   node.removeEventListener("blur", onNodeBlur);
   node.contentEditable = "false";
   node.classList.remove("editing");
+  saveData();
 }
 
 function finishEditAll() {
@@ -198,6 +200,7 @@ canvas.addEventListener("pointermove", e => {
 });
 
 canvas.addEventListener("pointerup", () => {
+  if (dragState) saveData();
   dragState = null;
 });
 
@@ -231,6 +234,7 @@ function handleLink(node) {
   }
   createArrow(linkStartNode, node);
   linkStartNode = null;
+  saveData();
 }
 
 function createArrow(fromNode, toNode) {
@@ -375,6 +379,7 @@ function handleDeleteNode(node) {
     nodes = nodes.filter(n => n !== node);
     node.remove();
     deleteSelected = null;
+    saveData();
   } else {
     clearDeleteSelection();
     deleteSelected = node;
@@ -387,6 +392,7 @@ function handleDeleteArrow(arrow) {
     arrow.wrapper.remove();
     arrows = arrows.filter(a => a !== arrow);
     deleteSelected = null;
+    saveData();
   } else {
     clearDeleteSelection();
     deleteSelected = arrow;
@@ -480,6 +486,7 @@ function loadFromData(data) {
     const toNode = nodeMap.get(a.to);
     if (fromNode && toNode) createArrow(fromNode, toNode);
   });
+  saveData();
 }
 
 /* ─────────────────────────────
@@ -538,6 +545,42 @@ function layoutSubtree(node, x, y, children) {
     startX += 200;
   });
 }
+
+function saveData() {
+  const data = {
+    version: 1,
+    title: titleInput.value || "無題のフロー",
+    nodes: nodes.map(n => ({
+      id: n.dataset.id,
+      type: n.dataset.type,
+      text: n.textContent,
+      left: n.style.left,
+      top: n.style.top
+    })),
+    arrows: arrows.map(a => ({
+      from: a.fromNode.dataset.id,
+      to: a.toNode.dataset.id
+    }))
+  };
+
+  localStorage.setItem("flowcombo-data", JSON.stringify(data));
+}
+
+function loadData() {
+  const json = localStorage.getItem("flowcombo-data");
+  if (!json) return;
+
+  try {
+    const data = JSON.parse(json);
+    loadFromData(data);
+  } catch (e) {
+    console.error("自動保存データの読み込みに失敗:", e);
+  }
+}
+
+window.addEventListener("load", loadData);
+
+
 
 
 
