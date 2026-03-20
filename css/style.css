@@ -112,7 +112,6 @@ html, body {
   width: 3000px;
   height: 3000px;
   overflow: scroll;
-  touch-action: pan-x pan-y; /* 2本指スクロール */
   transform-origin: 0 0;
 }
 
