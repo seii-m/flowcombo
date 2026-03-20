@@ -115,7 +115,7 @@ html, body {
   width: 2000px;
   height: 900px;
   overflow: scroll; /* ← canvas 内部の縦横スクロール */
-  touch-action: pan-x pan-y;
+  touch-action: none;
   transform-origin: 0 0;
   margin-top: 0px; /* toolbar の高さぶん下げる */
   margin-bottom: 60px; /* ad-area の高さぶん上げる */
