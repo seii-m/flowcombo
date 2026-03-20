@@ -154,6 +154,20 @@ body {
   border-color: #e53935;
 }
 
+/* 移動モードで選択中のノード */
+.node.selected-move {
+  border-color: #1e88e5;
+  background: #e3f2fd;
+  box-shadow: 0 0 6px rgba(30,136,229,0.4);
+}
+
+/* 矢印モードで選択中のノード */
+.node.selected-link {
+  border-color: #8e24aa;
+  background: #f3e5f5;
+  box-shadow: 0 0 6px rgba(142,36,170,0.4);
+}
+
 /* ─────────────────────────────
    矢印
 ────────────────────────────── */
