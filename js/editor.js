@@ -93,18 +93,27 @@ function onNodePointerDown(e) {
   }
 
   if (mode === "move") {
-     if (e.pointerType === "mouse") {
-       // PC → ドラッグ開始
-       startMove(node, e);
-     } else {
-       // スマホ → 2タップ移動
-       moveTarget = node;
-     }
+    nodes.forEach(n => n.classList.remove("selected-move"));
+    node.classList.add("selected-move");
+  
+    if (e.pointerType === "mouse") {
+      startMove(node, e);
+    } else {
+      moveTarget = node;
+    }
     return;
   }
-   
+
   if (mode === "link") {
+    nodes.forEach(n => n.classList.remove("selected-link"));
+    node.classList.add("selected-link");
+
     handleLink(node);
+
+    // 2個目を選んだら選択解除
+    if (linkStartNode === null) {
+      nodes.forEach(n => n.classList.remove("selected-link"));
+    }
     return;
   }
 
