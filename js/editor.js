@@ -72,12 +72,12 @@ function addNode(type) {
     type === "action" ? "行動" :
     "確認";
 
-  // ★ 表示されている画面の中心に追加
-  const viewWidth  = window.innerWidth;
-  const viewHeight = window.innerHeight;
-
-  const x = canvas.scrollLeft + (viewWidth / 2) - 50;
-  const y = canvas.scrollTop  + (viewHeight / 2) - 20;
+  // ★ 種類ごとの完全固定位置
+  let x = 40;
+  let y =
+    type === "start"  ? 40 :
+    type === "action" ? 140 :
+                        240;
 
   node.style.left = `${x}px`;
   node.style.top = `${y}px`;
