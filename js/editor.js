@@ -413,20 +413,23 @@ canvas.addEventListener("pointerdown", e => {
    JSON 保存 / 読込
 ────────────────────────────── */
 
+node.dataset.id = crypto.randomUUID();
+node.dataset.type = type;
+        
 exportBtn.addEventListener("click", () => {
   const data = {
     version: 1,
     title: titleInput.value || "無題のフロー",
     nodes: nodes.map(n => ({
-      type: n.classList.contains("start") ? "start" :
-            n.classList.contains("action") ? "action" : "check",
+      id: n.dataset.id,
+      type: n.dataset.type,
       text: n.textContent,
       left: n.style.left,
       top: n.style.top
     })),
     arrows: arrows.map(a => ({
-      fromIndex: nodes.indexOf(a.fromNode),
-      toIndex: nodes.indexOf(a.toNode)
+      from: a.fromNode.dataset.id,
+      to: a.toNode.dataset.id
     }))
   };
 
@@ -456,8 +459,12 @@ function loadFromData(data) {
   
   if (!data || !Array.isArray(data.nodes)) return;
 
+  const nodeMap = new Map();
+  
   data.nodes.forEach(n => {
     const node = document.createElement("div");
+    node.dataset.id = n.id;
+    node.dataset.type = n.type;
     node.classList.add("node", n.type);
     node.textContent = n.text || "";
     node.style.left = n.left || "100px";
@@ -465,17 +472,14 @@ function loadFromData(data) {
     canvas.appendChild(node);
     nodes.push(node);
     node.addEventListener("pointerdown", onNodePointerDown);
+    nodeMap.set(n.id, node);
   });
-
-  if (Array.isArray(data.arrows)) {
-    data.arrows.forEach(a => {
-      const fromNode = nodes[a.fromIndex];
-      const toNode = nodes[a.toIndex];
-      if (fromNode && toNode) {
-        createArrow(fromNode, toNode);
-      }
-    });
-  }
+  
+  data.arrows.forEach(a => {
+    const fromNode = nodeMap.get(a.from);
+    const toNode = nodeMap.get(a.to);
+    if (fromNode && toNode) createArrow(fromNode, toNode);
+  });
 }
 
 /* ─────────────────────────────
