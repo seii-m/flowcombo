@@ -12,6 +12,12 @@ let dragState = null;
 let linkStartNode = null;
 let deleteSelected = null;
 
+const titleInput = document.getElementById("flow-title");
+
+titleInput.addEventListener("input", () => {
+  saveData();
+});
+
 /* ─────────────────────────────
    モード切り替え（トグル式）
 ────────────────────────────── */
