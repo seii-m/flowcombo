@@ -572,23 +572,6 @@ function layoutSubtreeHorizontal(node, x, y, children) {
   });
 }
 
-function layoutSubtree(node, x, y, children) {
-  node.style.left = `${x}px`;
-  node.style.top = `${y}px`;
-  updateArrowsForNode(node);
-
-  const kids = children.get(node);
-  if (!kids || kids.length === 0) return;
-
-  const totalWidth = (kids.length - 1) * 200;
-  let startX = x - totalWidth / 2;
-
-  kids.forEach(child => {
-    layoutSubtree(child, startX, y + 120, children);
-    startX += 200;
-  });
-}
-
 function saveData() {
   const data = {
     version: 1,
