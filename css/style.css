@@ -21,7 +21,7 @@ body {
   display: flex;
   align-items: center;
   padding: 8px 8px;
-  gap: 24px; /* グループ間の余白 */
+  gap: 24px;
   background: #ffffff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.08);
   overflow-x: auto;
@@ -57,25 +57,21 @@ body {
   background: #e0e0e0;
 }
 
-/* ノード追加（青系） */
 .node-btn {
   border-color: #90caf9;
   color: #1565c0;
 }
 
-/* モード（グレー系） */
 .mode-btn {
   border-color: #bdbdbd;
   color: #424242;
 }
 
-/* 削除だけ赤系 */
 .mode-btn.danger {
   border-color: #ef9a9a;
   color: #c62828;
 }
 
-/* モード選択中（赤枠＋フラット） */
 .mode-btn.active {
   border-color: #e53935;
   background: #ffe5e5;
@@ -83,7 +79,6 @@ body {
   font-weight: 600;
 }
 
-/* 読込/保存（落ち着いたグレー） */
 .io-btn {
   border-color: #b0bec5;
   color: #455a64;
@@ -95,8 +90,8 @@ body {
 
 #canvas {
   position: relative;
-  margin-top: 64px; /* ツールバー高さ */
-  height: calc(100vh - 64px - 60px); /* ツールバー + 広告 */
+  margin-top: 64px;
+  height: calc(100vh - 64px - 60px);
   overflow: auto;
   background: #fafafa;
 }
@@ -137,29 +132,24 @@ body {
   text-align: center;
 }
 
-/* 始動：丸 */
 .node.start {
   border-radius: 999px;
   border-color: #81c784;
 }
 
-/* 行動：四角 */
 .node.action {
   border-color: #64b5f6;
 }
 
-/* 確認：角丸 */
 .node.check {
   border-radius: 16px;
   border-color: #ffb74d;
 }
 
-/* 編集中 */
 .node.editing {
   border-style: dashed;
 }
 
-/* 削除選択 */
 .node.selected-delete {
   border-color: #e53935;
 }
