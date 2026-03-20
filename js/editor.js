@@ -515,6 +515,7 @@ function autoAlignTree() {
   const children = buildTree();
   const depth = computeDepths(children);
 
+  // depth → ノード配列
   const columns = new Map();
   nodes.forEach(n => {
     const d = depth.get(n) || 0;
@@ -525,7 +526,18 @@ function autoAlignTree() {
   const colWidth = 140;
   const rowHeight = 70;
 
+  // ★ depth ごとに「親の位置」でソートする
   columns.forEach((list, d) => {
+    if (d > 0) {
+      list.sort((a, b) => {
+        const pa = findParents(a)[0];
+        const pb = findParents(b)[0];
+        const ya = pa ? parseInt(pa.style.top) : 0;
+        const yb = pb ? parseInt(pb.style.top) : 0;
+        return ya - yb;
+      });
+    }
+
     list.forEach((node, i) => {
       const x = 40 + d * colWidth;
       const y = 40 + i * rowHeight;
@@ -535,6 +547,12 @@ function autoAlignTree() {
       updateArrowsForNode(node);
     });
   });
+}
+
+function findParents(node) {
+  return arrows
+    .filter(a => a.toNode === node)
+    .map(a => a.fromNode);
 }
 
 function computeDepths(children) {
