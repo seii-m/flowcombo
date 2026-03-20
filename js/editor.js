@@ -564,7 +564,7 @@ function autoAlignTree() {
 
   roots.forEach(root => {
     layoutSubtreeHorizontal(root, startX, startY, children);
-    startX += 300; // 次のルートは右へ
+    startX += 200; // 次のルートは右へ
   });
 }
 
@@ -577,12 +577,11 @@ function layoutSubtreeHorizontal(node, x, y, children) {
   const kids = children.get(node);
   if (!kids || kids.length === 0) return;
 
-  // ★ 中央揃えをやめて、上から順に並べる
-  let childY = y;
+  let childY = y; // ★ 親の位置から下に積む
 
   kids.forEach(child => {
-    layoutSubtreeHorizontal(child, x + 200, childY, children);
-    childY += 150; // 次の子は下へ
+    layoutSubtreeHorizontal(child, x + 200, childY, children); // ★ 横200
+    childY += 100; // ★ 縦100
   });
 }
 
