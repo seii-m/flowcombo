@@ -106,10 +106,11 @@ body {
 
 #canvas {
   position: relative;
-  margin-top: 64px;
-  height: calc(100vh - 64px - 60px);
-  overflow: auto;
-  background: #fafafa;
+  width: 3000px;
+  height: 3000px;
+  overflow: scroll;
+  touch-action: pan-x pan-y; /* 2本指スクロール */
+  transform-origin: 0 0;
 }
 
 /* ─────────────────────────────
