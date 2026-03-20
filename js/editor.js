@@ -558,8 +558,9 @@ function autoAlignTree() {
   const children = buildTree();
   const roots = findRoots(children);
 
-  let startX = 40 + canvas.scrollLeft;
-  let startY = canvas.clientHeight / 2 + canvas.scrollTop;
+  // ★ 左上基準にする
+  let startX = 40;   // ← キャンバス左から40px
+  let startY = 40;   // ← キャンバス上から40px
 
   roots.forEach(root => {
     layoutSubtreeHorizontal(root, startX, startY, children);
@@ -576,12 +577,12 @@ function layoutSubtreeHorizontal(node, x, y, children) {
   const kids = children.get(node);
   if (!kids || kids.length === 0) return;
 
-  const totalHeight = (kids.length - 1) * 150;
-  let startY = y - totalHeight / 2;
+  // ★ 中央揃えをやめて、上から順に並べる
+  let childY = y;
 
   kids.forEach(child => {
-    layoutSubtreeHorizontal(child, x + 200, startY, children);
-    startY += 150;
+    layoutSubtreeHorizontal(child, x + 200, childY, children);
+    childY += 150; // 次の子は下へ
   });
 }
 
