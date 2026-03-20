@@ -5,14 +5,18 @@
   <title>FlowCombo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="css/style.css" />
-</head>
-<link rel="manifest" href="manifest.json">
 
-<script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("js/sw.js");
-  }
-</script>
+  <!-- ★ manifest は head の中に置く -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- ★ service worker はルートに置くのが正解 -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
+  </script>
+</head>
+
 <body>
 
   <!-- ツールバー -->
@@ -38,13 +42,10 @@
     </div>
   </div>
 
-  <!-- キャンバス -->
   <div id="canvas"></div>
 
-  <!-- 広告欄 -->
   <div id="ad-area">広告</div>
 
-  <!-- JSON 読込欄 -->
   <textarea id="import-area" placeholder="ここに JSON を貼り付けて読込ボタン"></textarea>
 
   <script src="js/editor.js"></script>
