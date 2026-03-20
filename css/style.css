@@ -90,7 +90,7 @@ body {
   position: relative;
   margin-top: 64px; /* ツールバー高さ + 余白 */
   width: 100%;
-  height: calc(100vh - 64px);
+  height: calc(100vh - 64px - 60px);}
   overflow: auto;
   background: #fafafa;
 }
