@@ -79,10 +79,12 @@ function addNode(type) {
    ノード操作
 ────────────────────────────── */
 
+let moveTarget = null;
+
 function onNodePointerDown(e) {
   const node = e.currentTarget;
   e.stopPropagation();
-
+   
   if (mode === "view") return;
 
   if (mode === "edit") {
@@ -91,10 +93,16 @@ function onNodePointerDown(e) {
   }
 
   if (mode === "move") {
-    startMove(node, e);
+     if (e.pointerType === "mouse") {
+       // PC → ドラッグ開始
+       startMove(node, e);
+     } else {
+       // スマホ → 2タップ移動
+       moveTarget = node;
+     }
     return;
   }
-
+   
   if (mode === "link") {
     handleLink(node);
     return;
@@ -361,9 +369,18 @@ function handleDeleteArrow(arrow) {
    キャンバスクリックでリセット
 ────────────────────────────── */
 
-canvas.addEventListener("pointerdown", () => {
-  if (mode === "link") linkStartNode = null;
-  if (mode === "delete") clearDeleteSelection();
+canvas.addEventListener("pointerdown", e => {
+  if (mode === "move" && moveTarget && e.pointerType !== "mouse") {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left + canvas.scrollLeft;
+    const y = e.clientY - rect.top + canvas.scrollTop;
+
+    moveTarget.style.left = `${x}px`;
+    moveTarget.style.top = `${y}px`;
+    updateArrowsForNode(moveTarget);
+
+    moveTarget = null;
+  }
 });
 
 /* ─────────────────────────────
