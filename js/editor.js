@@ -458,12 +458,23 @@ exportBtn.addEventListener("click", () => {
 });
 
 importBtn.addEventListener("click", () => {
-  try {
-    const data = JSON.parse(importArea.value);
-    loadFromData(data);
-  } catch (e) {
-    alert("JSON の形式が不正です");
-  }
+  document.getElementById("file-input").click();
+});
+
+document.getElementById("file-input").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      loadFromData(data);
+    } catch {
+      alert("JSON の形式が不正です");
+    }
+  };
+  reader.readAsText(file);
 });
 
 function loadFromData(data) {
