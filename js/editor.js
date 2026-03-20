@@ -183,45 +183,6 @@ function finishEditAll() {
 }
 
 /* ─────────────────────────────
-   移動モード
-────────────────────────────── */
-
-canvas.addEventListener("pointermove", e => {
-  if (mode !== "move" || !dragState) return;
-  e.preventDefault();
-
-  const { node, offsetX, offsetY, canvasLeft, canvasTop } = dragState;
-
-  const x = e.clientX - canvasLeft + canvas.scrollLeft - offsetX;
-  const y = e.clientY - canvasTop + canvas.scrollTop - offsetY;
-
-  node.style.left = `${x}px`;
-  node.style.top = `${y}px`;
-
-  updateArrowsForNode(node);
-});
-
-canvas.addEventListener("pointerup", () => {
-  if (dragState) saveData();
-  dragState = null;
-});
-
-function startMove(node, e) {
-  e.preventDefault();
-
-  const rectCanvas = canvas.getBoundingClientRect();
-  const rectNode = node.getBoundingClientRect();
-
-  dragState = {
-    node,
-    offsetX: e.clientX - rectNode.left,
-    offsetY: e.clientY - rectNode.top,
-    canvasLeft: rectCanvas.left,
-    canvasTop: rectCanvas.top
-  };
-}
-
-/* ─────────────────────────────
    矢印モード
 ────────────────────────────── */
 
