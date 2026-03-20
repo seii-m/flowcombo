@@ -149,9 +149,13 @@ canvas.addEventListener("pointermove", e => {
   if (mode !== "move") return;
   if (!dragState) return;
 
+  const rect = canvas.getBoundingClientRect();
+
   const { node, offsetX, offsetY } = dragState;
-  const x = e.pageX - offsetX + canvas.scrollLeft;
-  const y = e.pageY - offsetY + canvas.scrollTop;
+
+  // canvas 基準の座標に変換
+  const x = e.clientX - rect.left - offsetX + canvas.scrollLeft;
+  const y = e.clientY - rect.top - offsetY + canvas.scrollTop;
 
   node.style.left = `${x}px`;
   node.style.top = `${y}px`;
@@ -165,10 +169,11 @@ canvas.addEventListener("pointerup", () => {
 
 function startMove(node, e) {
   const rect = node.getBoundingClientRect();
+
   dragState = {
     node,
-    offsetX: e.pageX - rect.left,
-    offsetY: e.pageY - rect.top
+    offsetX: e.clientX - rect.left,
+    offsetY: e.clientY - rect.top
   };
 }
 
