@@ -1,115 +1,183 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f5f5;
 }
 
-/* ───────────────────────────────
-   ツールバー
-─────────────────────────────── */
+/* ツールバー */
+
 #toolbar {
-  display: flex;
-  gap: 8px;
-  padding: 8px;
-  overflow-x: auto;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-  background: #fff;
-  z-index: 10000;
-  position: relative;
-}
-
-#toolbar button {
-  flex: 0 0 auto;
-  position: relative;
-  padding: 8px 12px;
-  font-size: 16px;
-}
-
-#toolbar button::after {
-  content: "";
-  position: absolute;
-  top: -8px;
-  bottom: -8px;
-  left: -8px;
-  right: -8px;
-  pointer-events: none;
-}
-
-/* ───────────────────────────────
-   キャンバス
-─────────────────────────────── */
-#canvas {
-  width: 100%;
-  height: calc(100vh - 120px);
-  background: #fafafa;
-  position: relative;
-  overflow: hidden;
-}
-
-/* ───────────────────────────────
-   ノード
-─────────────────────────────── */
-.node {
-  position: absolute;
-  z-index: 1;
-  padding: 8px 12px;
-  border: 1px solid #333;
-  user-select: none;
-  touch-action: none;
-  background: white;
-}
-
-/* ───────────────────────────────
-   ノード種類
-─────────────────────────────── */
-.rect {
-  border-radius: 4px;
-  background: #e7f1ff;
-  border: 1px solid #4a78c2;
-  max-width: 160px;
-}
-
-.circle {
-  background: #eaffea;
-  border: 1px solid #4caf50;
-  border-radius: 20px;
-  max-width: 160px;
-  word-break: break-word;
-}
-
-.rounded {
-  border-radius: 14px;
-  background: #fff8d6;
-  border: 1px solid #c9a400;
-  max-width: 160px;
-}
-
-/* ───────────────────────────────
-   矢印（SVG）
-─────────────────────────────── */
-#link-layer {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 8px 8px;
+  gap: 16px;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  overflow-x: auto;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ボタン */
+
+.btn {
+  border: 1px solid #cccccc;
+  background: #ffffff;
+  color: #333333;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 44px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.btn:active {
+  background: #e0e0e0;
+}
+
+/* グループごとの色味 */
+
+.node-btn {
+  border-color: #90caf9;
+  color: #1565c0;
+}
+
+.io-btn {
+  border-color: #b0bec5;
+  color: #455a64;
+}
+
+.mode-btn {
+  border-color: #bdbdbd;
+  color: #424242;
+}
+
+.mode-btn.danger {
+  border-color: #ef9a9a;
+  color: #c62828;
+}
+
+/* モード選択中のハイライト（赤枠＋フラット） */
+
+.mode-btn.active {
+  border-color: #e53935;
+  box-shadow: 0 0 0 2px rgba(229,57,53,0.25);
+}
+
+/* キャンバス */
+
+#canvas {
+  position: relative;
+  margin-top: 64px; /* ツールバー高さ + 余白 */
   width: 100%;
-  height: 100%;
-  z-index: 9999;
+  height: calc(100vh - 64px);
+  overflow: auto;
+  background: #fafafa;
+}
+
+/* ノード */
+
+.node {
+  position: absolute;
+  min-width: 80px;
+  min-height: 40px;
+  padding: 6px 8px;
+  font-size: 13px;
+  background: #ffffff;
+  border: 2px solid #90a4ae;
+  color: #263238;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  cursor: default;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* 始動：丸 */
+
+.node.start {
+  border-radius: 999px;
+  border-color: #81c784;
+}
+
+/* 行動：四角（デフォルト） */
+
+.node.action {
+  border-radius: 4px;
+  border-color: #64b5f6;
+}
+
+/* 確認：角丸 */
+
+.node.check {
+  border-radius: 16px;
+  border-color: #ffb74d;
+}
+
+/* 編集中 */
+
+.node.editing {
+  border-style: dashed;
+}
+
+/* 削除モードでの選択 */
+
+.node.selected-delete {
+  border-color: #e53935;
+}
+
+/* 矢印 */
+
+.arrow {
+  position: absolute;
   pointer-events: none;
 }
 
-#link-layer line {
-  pointer-events: stroke;
-  stroke: #333;
+.arrow-line {
+  stroke: #616161;
   stroke-width: 2;
+  marker-end: url(#arrowhead);
 }
 
-line.selected {
-  stroke: red;
+.arrow.selected-delete .arrow-line {
+  stroke: #e53935;
 }
 
-/* ───────────────────────────────
-   選択状態
-─────────────────────────────── */
-.selected {
-  outline: 2px solid red;
+/* 読込用テキストエリア */
+
+#import-area {
+  position: fixed;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  height: 80px;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid #b0bec5;
+  background: rgba(255,255,255,0.9);
+  resize: none;
 }
