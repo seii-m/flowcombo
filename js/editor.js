@@ -513,29 +513,27 @@ document.getElementById("align-btn").addEventListener("click", autoAlignTree);
 
 function autoAlignTree() {
   const children = buildTree();
-  const roots = findRoots(children);
+  const depth = computeDepths(children);
 
-  let startX = 40;  // 左上基準
-  let startY = 40;
-
-  roots.forEach(root => {
-    layoutSubtreeHorizontal(root, startX, startY, children);
-    startX += 140; // ★ 横間隔をさらに狭く
+  const columns = new Map();
+  nodes.forEach(n => {
+    const d = depth.get(n) || 0;
+    if (!columns.has(d)) columns.set(d, []);
+    columns.get(d).push(n);
   });
-}
 
-function layoutSubtreeHorizontal(node, x, y, children) {
-  node.style.left = `${x}px`;
-  node.style.top = `${y}px`;
-  updateArrowsForNode(node);
-  ensureCanvasSize(x, y);
+  const colWidth = 140;
+  const rowHeight = 70;
 
-  const kids = children.get(node);
-  if (!kids || kids.length === 0) return;
+  columns.forEach((list, d) => {
+    list.forEach((node, i) => {
+      const x = 40 + d * colWidth;
+      const y = 40 + i * rowHeight;
 
-  kids.forEach((child, i) => {
-    const childY = y + i * 70; // ← 親の位置に依存しない
-    layoutSubtreeHorizontal(child, x + 140, childY, children);
+      node.style.left = `${x}px`;
+      node.style.top = `${y}px`;
+      updateArrowsForNode(node);
+    });
   });
 }
 
@@ -563,33 +561,6 @@ function computeDepths(children) {
   }
 
   return depth;
-}
-
-function autoAlignTree() {
-  const children = buildTree();
-  const depth = computeDepths(children);
-
-  // depth → ノード配列
-  const columns = new Map();
-  nodes.forEach(n => {
-    const d = depth.get(n) || 0;
-    if (!columns.has(d)) columns.set(d, []);
-    columns.get(d).push(n);
-  });
-
-  const colWidth = 140;
-  const rowHeight = 70;
-
-  columns.forEach((list, d) => {
-    list.forEach((node, i) => {
-      const x = 40 + d * colWidth;
-      const y = 40 + i * rowHeight;
-
-      node.style.left = `${x}px`;
-      node.style.top = `${y}px`;
-      updateArrowsForNode(node);
-    });
-  });
 }
       
 function saveData() {
