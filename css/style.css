@@ -8,6 +8,11 @@ body {
   background: #f5f5f5;
 }
 
+html, body {
+  height: 100%;
+  overflow: auto; /* ← hidden をやめる */
+}
+
 /* ─────────────────────────────
    ツールバー
 ────────────────────────────── */
@@ -106,11 +111,13 @@ body {
 
 #canvas {
   position: relative;
-  width: 3000px;
-  height: 3000px;
-  overflow: scroll;
+  width: 2000px;
+  height: 2000px;
+  overflow: scroll; /* ← canvas 内部の縦横スクロール */
   touch-action: pan-x pan-y;
   transform-origin: 0 0;
+  margin-top: 60px; /* toolbar の高さぶん下げる */
+  margin-bottom: 60px; /* ad-area の高さぶん上げる */
 }
 
 /* ─────────────────────────────
@@ -118,7 +125,7 @@ body {
 ────────────────────────────── */
 
 #ad-area {
-  position: fixed;
+  position: sticky;
   bottom: 0;
   left: 0;
   right: 0;
