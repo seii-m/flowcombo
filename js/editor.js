@@ -63,6 +63,9 @@ function addNode(type) {
   const node = document.createElement("div");
   node.classList.add("node", type);
 
+  node.dataset.id = crypto.randomUUID();
+  node.dataset.type = type;
+  
   node.textContent =
     type === "start" ? "始動" :
     type === "action" ? "行動" :
@@ -412,9 +415,6 @@ canvas.addEventListener("pointerdown", e => {
 /* ─────────────────────────────
    JSON 保存 / 読込
 ────────────────────────────── */
-
-node.dataset.id = crypto.randomUUID();
-node.dataset.type = type;
         
 exportBtn.addEventListener("click", () => {
   const data = {
