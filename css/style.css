@@ -78,7 +78,9 @@ body {
 /* モード選択中（赤枠＋フラット） */
 .mode-btn.active {
   border-color: #e53935;
-  box-shadow: 0 0 0 2px rgba(229,57,53,0.25);
+  background: #ffe5e5;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.15);
+  font-weight: 600;
 }
 
 /* 読込/保存（落ち着いたグレー） */
