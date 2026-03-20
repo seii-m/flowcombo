@@ -207,6 +207,10 @@ html, body {
   pointer-events: none;
 }
 
+.arrow.can-select {
+  pointer-events: auto;
+}
+
 .arrow-line {
   position: absolute;
   height: 2px;
