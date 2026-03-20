@@ -40,7 +40,13 @@ body {
   padding: 4px 8px;
   background: transparent;
   outline: none;
-  min-width: 120px;
+  min-width: 140px;
+  color: #333;
+}
+
+#flow-title:focus {
+  background: #fff3e0;
+  border-radius: 4px;
 }
 
 /* ─────────────────────────────
