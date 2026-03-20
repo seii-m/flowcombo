@@ -516,8 +516,8 @@ function autoAlignTree() {
     columns.get(d).push(n);
   });
 
-  const colWidth = 140;
-  const rowHeight = 70;
+  const colWidth = 150;
+  const rowHeight =100;
 
   // ★ depth ごとに「親の位置」でソートする
   columns.forEach((list, d) => {
