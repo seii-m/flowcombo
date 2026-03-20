@@ -533,11 +533,9 @@ function layoutSubtreeHorizontal(node, x, y, children) {
   const kids = children.get(node);
   if (!kids || kids.length === 0) return;
 
-  let childY = y; // 親の位置から下に積む
-
-  kids.forEach(child => {
-    layoutSubtreeHorizontal(child, x + 140, childY, children); // ★ 横140
-    childY += 70; // ★ 縦70
+  kids.forEach((child, i) => {
+    const childY = y + i * 70; // ← 親の位置に依存しない
+    layoutSubtreeHorizontal(child, x + 140, childY, children);
   });
 }
 
