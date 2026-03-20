@@ -74,7 +74,7 @@ function addNode(type) {
 
   // ★ 表示されている画面の中心に追加
   const viewWidth  = window.innerWidth;
-  const viewHeight = window.innerHeight - 60; // 広告ぶん
+  const viewHeight = window.innerHeight;
 
   const x = canvas.scrollLeft + (viewWidth / 2) - 50;
   const y = canvas.scrollTop  + (viewHeight / 2) - 20;
