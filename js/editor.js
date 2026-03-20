@@ -423,6 +423,7 @@ canvas.addEventListener("pointerdown", e => {
 ────────────────────────────── */
         
 exportBtn.addEventListener("click", () => {
+  if (!confirm("現在のフローを保存しますか？")) return;
   const data = {
     version: 1,
     title: titleInput.value || "無題のフロー",
