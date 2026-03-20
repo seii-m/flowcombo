@@ -170,13 +170,15 @@ canvas.addEventListener("pointerup", () => {
 });
 
 function startMove(node, e) {
-  e.preventDefault(); // ← スマホのスクロールを止める
+  e.preventDefault();
 
-   const rect = node.getBoundingClientRect();
+  const rectCanvas = canvas.getBoundingClientRect();
+  const rectNode = node.getBoundingClientRect();
+
   dragState = {
     node,
-    offsetX: e.clientX - rect.left,
-    offsetY: e.clientY - rect.top
+    offsetX: e.clientX - rectNode.left + (rectCanvas.left - canvas.scrollLeft),
+    offsetY: e.clientY - rectNode.top + (rectCanvas.top - canvas.scrollTop)
   };
 }
 
