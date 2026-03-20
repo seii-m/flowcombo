@@ -115,7 +115,7 @@ function onNodePointerDown(e) {
     node.classList.add("selected-move");
   
     if (e.pointerType === "mouse") {
-      startMove(node, e);
+      startDragPC(node, e);
     } else {
       moveTarget = node;
     }
@@ -147,6 +147,53 @@ function clearNodeSelections() {
   nodes.forEach(n => {
     n.classList.remove("selected-move", "selected-link", "selected-edit", "selected-delete");
   });
+}
+
+/* ─────────────────────────────
+   移動モード
+────────────────────────────── */
+
+function startDragPC(node, e) {
+  const rectCanvas = canvas.getBoundingClientRect();
+  const rectNode = node.getBoundingClientRect();
+
+  dragState = {
+    node,
+    offsetX: e.clientX - rectNode.left,
+    offsetY: e.clientY - rectNode.top,
+    canvasLeft: rectCanvas.left,
+    canvasTop: rectCanvas.top
+  };
+
+  node.setPointerCapture(e.pointerId);
+  node.addEventListener("pointermove", onDragMovePC);
+  node.addEventListener("pointerup", onDragEndPC);
+}
+
+function onDragMovePC(e) {
+  if (!dragState) return;
+
+  const { node, offsetX, offsetY, canvasLeft, canvasTop } = dragState;
+
+  const x = e.clientX - canvasLeft + canvas.scrollLeft - offsetX;
+  const y = e.clientY - canvasTop + canvas.scrollTop - offsetY;
+
+  node.style.left = `${x}px`;
+  node.style.top = `${y}px`;
+
+  updateArrowsForNode(node);
+  ensureCanvasSize(x, y);
+}
+
+function onDragEndPC(e) {
+  const node = dragState.node;
+
+  node.releasePointerCapture(e.pointerId);
+  node.removeEventListener("pointermove", onDragMovePC);
+  node.removeEventListener("pointerup", onDragEndPC);
+
+  dragState = null;
+  saveData();
 }
 
 /* ─────────────────────────────
