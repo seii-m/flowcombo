@@ -11,7 +11,6 @@ let arrows = [];
 let dragState = null;
 let linkStartNode = null;
 let deleteSelected = null;
-let currentScale = 1;
 
 const titleInput = document.getElementById("flow-title");
 
