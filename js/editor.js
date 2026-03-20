@@ -415,6 +415,8 @@ canvas.addEventListener("pointerdown", e => {
 
 exportBtn.addEventListener("click", () => {
   const data = {
+    version: 1,
+    title: titleInput.value || "無題のフロー",
     nodes: nodes.map(n => ({
       type: n.classList.contains("start") ? "start" :
             n.classList.contains("action") ? "action" : "check",
@@ -427,6 +429,7 @@ exportBtn.addEventListener("click", () => {
       toIndex: nodes.indexOf(a.toNode)
     }))
   };
+
   const json = JSON.stringify(data, null, 2);
   navigator.clipboard?.writeText(json).catch(() => {});
   importArea.value = json;
@@ -449,6 +452,8 @@ function loadFromData(data) {
   deleteSelected = null;
   linkStartNode = null;
 
+  titleInput.value = data.title || "無題のフロー";
+  
   if (!data || !Array.isArray(data.nodes)) return;
 
   data.nodes.forEach(n => {
