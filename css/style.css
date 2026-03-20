@@ -8,6 +8,11 @@ body {
   background: #f5f5f5;
 }
 
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 /* ─────────────────────────────
    ツールバー
 ────────────────────────────── */
@@ -15,8 +20,6 @@ body {
 #toolbar {
   position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 10;
   display: flex;
   align-items: center;
