@@ -88,12 +88,14 @@ function onNodePointerDown(e) {
   if (mode === "view") return;
 
   if (mode === "edit") {
+    clearNodeSelections();
+    node.classList.add("selected-edit");
     startEdit(node);
     return;
   }
 
   if (mode === "move") {
-    nodes.forEach(n => n.classList.remove("selected-move"));
+    clearNodeSelections();
     node.classList.add("selected-move");
   
     if (e.pointerType === "mouse") {
@@ -105,22 +107,30 @@ function onNodePointerDown(e) {
   }
 
   if (mode === "link") {
-    nodes.forEach(n => n.classList.remove("selected-link"));
+    clearNodeSelections();
     node.classList.add("selected-link");
 
     handleLink(node);
 
     // 2個目を選んだら選択解除
     if (linkStartNode === null) {
-      nodes.forEach(n => n.classList.remove("selected-link"));
+      clearNodeSelections();
     }
     return;
   }
 
   if (mode === "delete") {
+    clearNodeSelections();
+    node.classList.add("selected-delete");
     handleDeleteNode(node);
     return;
   }
+}
+
+function clearNodeSelections() {
+  nodes.forEach(n => {
+    n.classList.remove("selected-move", "selected-link", "selected-edit", "selected-delete");
+  });
 }
 
 /* ─────────────────────────────
