@@ -12,29 +12,38 @@ let dragState = null;
 let linkStartNode = null;
 let deleteSelected = null;
 
-// 初期モードを閲覧に
-setMode("view");
-
-/* モード切り替え */
+/* ─────────────────────────────
+   モード切り替え（トグル式）
+────────────────────────────── */
 
 modeButtons.forEach(btn => {
   btn.addEventListener("click", () => {
-    const m = btn.dataset.mode;
-    setMode(m);
+    const newMode = btn.dataset.mode;
+
+    // 同じボタンを押したら閲覧に戻す
+    if (mode === newMode) {
+      setMode("view");
+    } else {
+      setMode(newMode);
+    }
   });
 });
 
 function setMode(newMode) {
   mode = newMode;
+
   modeButtons.forEach(btn => {
     btn.classList.toggle("active", btn.dataset.mode === mode);
   });
+
   clearDeleteSelection();
   finishEditAll();
   linkStartNode = null;
 }
 
-/* ノード追加 */
+/* ─────────────────────────────
+   ノード追加
+────────────────────────────── */
 
 nodeButtons.forEach(btn => {
   btn.addEventListener("click", () => {
@@ -46,8 +55,13 @@ nodeButtons.forEach(btn => {
 function addNode(type) {
   const node = document.createElement("div");
   node.classList.add("node", type);
-  node.textContent = type === "start" ? "始動" : type === "action" ? "行動" : "確認";
 
+  node.textContent =
+    type === "start" ? "始動" :
+    type === "action" ? "行動" :
+    "確認";
+
+  // キャンバス中央に追加
   const rect = canvas.getBoundingClientRect();
   const x = rect.width / 2 - 50 + canvas.scrollLeft;
   const y = rect.height / 2 - 20 + canvas.scrollTop;
@@ -61,15 +75,15 @@ function addNode(type) {
   node.addEventListener("pointerdown", onNodePointerDown);
 }
 
-/* ノード操作 */
+/* ─────────────────────────────
+   ノード操作
+────────────────────────────── */
 
 function onNodePointerDown(e) {
   const node = e.currentTarget;
   e.stopPropagation();
 
-  if (mode === "view") {
-    return;
-  }
+  if (mode === "view") return;
 
   if (mode === "edit") {
     startEdit(node);
@@ -92,13 +106,16 @@ function onNodePointerDown(e) {
   }
 }
 
-/* 編集モード */
+/* ─────────────────────────────
+   編集モード
+────────────────────────────── */
 
 function startEdit(node) {
   finishEditAll();
   node.contentEditable = "true";
   node.classList.add("editing");
   node.focus();
+
   const range = document.createRange();
   range.selectNodeContents(node);
   const sel = window.getSelection();
@@ -124,7 +141,9 @@ function finishEditAll() {
   });
 }
 
-/* 移動モード */
+/* ─────────────────────────────
+   移動モード
+────────────────────────────── */
 
 canvas.addEventListener("pointermove", e => {
   if (mode !== "move") return;
@@ -153,7 +172,9 @@ function startMove(node, e) {
   };
 }
 
-/* 矢印モード */
+/* ─────────────────────────────
+   矢印モード
+────────────────────────────── */
 
 function handleLink(node) {
   if (!linkStartNode) {
@@ -185,9 +206,11 @@ function createArrow(fromNode, toNode) {
   marker.setAttribute("refX", "10");
   marker.setAttribute("refY", "3.5");
   marker.setAttribute("orient", "auto");
+
   const markerPath = document.createElementNS(svgNS, "path");
   markerPath.setAttribute("d", "M0,0 L10,3.5 L0,7 Z");
   markerPath.setAttribute("fill", "#616161");
+
   marker.appendChild(markerPath);
   defs.appendChild(marker);
   svg.appendChild(defs);
@@ -249,7 +272,9 @@ function updateArrowsForNode(node) {
   });
 }
 
-/* 削除モード */
+/* ─────────────────────────────
+   削除モード
+────────────────────────────── */
 
 function clearDeleteSelection() {
   deleteSelected = null;
@@ -259,7 +284,6 @@ function clearDeleteSelection() {
 
 function handleDeleteNode(node) {
   if (deleteSelected === node) {
-    // 削除
     arrows = arrows.filter(a => {
       if (a.fromNode === node || a.toNode === node) {
         a.wrapper.remove();
@@ -289,18 +313,18 @@ function handleDeleteArrow(arrow) {
   }
 }
 
-/* キャンバスクリックで状態リセット（リンク開始・削除選択など） */
+/* ─────────────────────────────
+   キャンバスクリックでリセット
+────────────────────────────── */
 
 canvas.addEventListener("pointerdown", () => {
-  if (mode === "link") {
-    linkStartNode = null;
-  }
-  if (mode === "delete") {
-    clearDeleteSelection();
-  }
+  if (mode === "link") linkStartNode = null;
+  if (mode === "delete") clearDeleteSelection();
 });
 
-/* 読込 / 保存 */
+/* ─────────────────────────────
+   JSON 保存 / 読込
+────────────────────────────── */
 
 exportBtn.addEventListener("click", () => {
   const data = {
@@ -331,7 +355,6 @@ importBtn.addEventListener("click", () => {
 });
 
 function loadFromData(data) {
-  // 既存クリア
   nodes.forEach(n => n.remove());
   arrows.forEach(a => a.wrapper.remove());
   nodes = [];
@@ -343,7 +366,7 @@ function loadFromData(data) {
 
   data.nodes.forEach(n => {
     const node = document.createElement("div");
-    node.classList.add("node", n.type === "start" ? "start" : n.type === "action" ? "action" : "check");
+    node.classList.add("node", n.type);
     node.textContent = n.text || "";
     node.style.left = n.left || "100px";
     node.style.top = n.top || "100px";
