@@ -11,6 +11,7 @@ let arrows = [];
 let dragState = null;
 let linkStartNode = null;
 let deleteSelected = null;
+let currentScale = 1;
 
 const titleInput = document.getElementById("flow-title");
 
@@ -279,6 +280,8 @@ function createArrow(fromNode, toNode) {
     }
   });
 }
+
+let currentScale = 1; // ★ 追加
 
 function updateArrowPosition(arrow) {
   const rectCanvas = canvas.getBoundingClientRect();
