@@ -163,9 +163,9 @@ body {
 }
 
 .node.selected-link {
-  border-color: #8e24aa;
-  background: #f3e5f5;
-  box-shadow: 0 0 6px rgba(142,36,170,0.4);
+  border-color: #43a047;
+  background: #e8f5e9;
+  box-shadow: 0 0 6px rgba(67,160,71,0.4);
 }
 
 .node.selected-delete {
