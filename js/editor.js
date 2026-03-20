@@ -1,298 +1,364 @@
-// ───────────────────────────────
-// SVG を canvas の最前面に配置
-// ───────────────────────────────
 const canvas = document.getElementById("canvas");
+const modeButtons = document.querySelectorAll(".mode-btn");
+const nodeButtons = document.querySelectorAll(".node-btn");
+const importBtn = document.getElementById("import-btn");
+const exportBtn = document.getElementById("export-btn");
+const importArea = document.getElementById("import-area");
 
-const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-svg.setAttribute("id", "link-layer");
-svg.style.position = "absolute";
-svg.style.top = "0";
-svg.style.left = "0";
-svg.style.width = "100%";
-svg.style.height = "100%";
-svg.style.zIndex = "9999";
+let mode = "view"; // view, edit, move, link, delete
+let nodes = [];
+let arrows = [];
+let dragState = null;
+let linkStartNode = null;
+let deleteSelected = null;
 
-svg.innerHTML = `
-  <defs>
-    <marker id="arrow" markerWidth="30" markerHeight="30" refX="6" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L6,3 Z" fill="#333" />
-    </marker>
-  </defs>
-`;
+// 初期モードを閲覧に
+setMode("view");
 
-canvas.appendChild(svg);
+/* モード切り替え */
 
-// ───────────────────────────────
-// ノード追加
-// ───────────────────────────────
-document.getElementById("add-rect").onclick = () => createNode("rect");
-document.getElementById("add-circle").onclick = () => createNode("circle");
-document.getElementById("add-rounded").onclick = () => createNode("rounded");
+modeButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const m = btn.dataset.mode;
+    setMode(m);
+  });
+});
 
-function createNode(type) {
+function setMode(newMode) {
+  mode = newMode;
+  modeButtons.forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.mode === mode);
+  });
+  clearDeleteSelection();
+  finishEditAll();
+  linkStartNode = null;
+}
+
+/* ノード追加 */
+
+nodeButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const type = btn.dataset.nodeType;
+    addNode(type);
+  });
+});
+
+function addNode(type) {
   const node = document.createElement("div");
   node.classList.add("node", type);
-  node.style.left = "50px";
-  node.style.top = "50px";
+  node.textContent = type === "start" ? "始動" : type === "action" ? "行動" : "確認";
 
-  if (type === "rect") node.textContent = "アクション";
-  if (type === "circle") node.textContent = "開始";
-  if (type === "rounded") node.textContent = "分岐";
+  const rect = canvas.getBoundingClientRect();
+  const x = rect.width / 2 - 50 + canvas.scrollLeft;
+  const y = rect.height / 2 - 20 + canvas.scrollTop;
+
+  node.style.left = `${x}px`;
+  node.style.top = `${y}px`;
 
   canvas.appendChild(node);
+  nodes.push(node);
+
+  node.addEventListener("pointerdown", onNodePointerDown);
 }
 
-// ───────────────────────────────
-// 状態管理
-// ───────────────────────────────
-let dragTarget = null;
-let offsetX = 0;
-let offsetY = 0;
-let startX = 0;
-let startY = 0;
-let moved = false;
-let tapTimer = null;
+/* ノード操作 */
 
-let longPressTimer = null; // { editTimer, deleteTimer }
+function onNodePointerDown(e) {
+  const node = e.currentTarget;
+  e.stopPropagation();
 
-let linkStartNode = null;
-const links = [];
-let selectedNode = null;
-let selectedLink = null;
-
-// ───────────────────────────────
-// pointerdown
-// ───────────────────────────────
-document.addEventListener("pointerdown", (e) => {
-  const node = e.target.closest(".node");
-
-  // ▼ ノードを押した
-  if (node) {
-    // 選択
-    if (selectedNode === node) {
-      node.classList.remove("selected");
-      selectedNode = null;
-    } else {
-      if (selectedNode) selectedNode.classList.remove("selected");
-      selectedNode = node;
-      node.classList.add("selected");
-    }
-  
-    // ドラッグ準備
-    dragTarget = node;
-    offsetX = e.offsetX;
-    offsetY = e.offsetY;
-    startX = e.pageX;
-    startY = e.pageY;
-    moved = false;
-    tapTimer = Date.now();
-  
-    // 編集タイマー（500ms）
-    const editTimer = setTimeout(() => {
-      if (!moved) startEdit(node);
-    }, 500);
-  
-    // 削除タイマー（800ms）
-    const deleteTimer = setTimeout(() => {
-      if (!moved) {
-        deleteNode(node);
-        selectedNode = null;
-      }
-    }, 800);
-  
-    // タイマーをまとめて保持
-    longPressTimer = { editTimer, deleteTimer };
-  
-    // リンク処理
-    handleLinkStart(node);
-  
+  if (mode === "view") {
     return;
   }
-});
 
-// ───────────────────────────────
-// pointermove
-// ───────────────────────────────
-document.addEventListener("pointermove", (e) => {
-  if (!dragTarget) return;
-
-  const dx = e.pageX - startX;
-  const dy = e.pageY - startY;
-
-  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-    moved = true;
-    if (longPressTimer) {
-      clearTimeout(longPressTimer.editTimer);
-      clearTimeout(longPressTimer.deleteTimer);
-    }
-  }
-
-  if (moved && !dragTarget.isContentEditable) {
-    dragTarget.style.left = (e.pageX - offsetX) + "px";
-    dragTarget.style.top = (e.pageY - offsetY) + "px";
-    updateLinksForNode(dragTarget);
-  }
-});
-
-// ───────────────────────────────
-// pointerup
-// ───────────────────────────────
-document.addEventListener("pointerup", (e) => {
-  if (longPressTimer) {
-    clearTimeout(longPressTimer.editTimer);
-    clearTimeout(longPressTimer.deleteTimer);
-  }
-  longPressTimer = null;
-  
-  const node = e.target.closest(".node");
-
-  // 短タップ編集
-  if (node && !moved && Date.now() - tapTimer < 200) {
+  if (mode === "edit") {
     startEdit(node);
+    return;
   }
 
-  dragTarget = null;
-
-  // 編集終了
-  if (!e.target.isContentEditable) {
-    document.querySelectorAll(".node[contenteditable='true']").forEach(n => finishEdit(n));
+  if (mode === "move") {
+    startMove(node, e);
+    return;
   }
+
+  if (mode === "link") {
+    handleLink(node);
+    return;
+  }
+
+  if (mode === "delete") {
+    handleDeleteNode(node);
+    return;
+  }
+}
+
+/* 編集モード */
+
+function startEdit(node) {
+  finishEditAll();
+  node.contentEditable = "true";
+  node.classList.add("editing");
+  node.focus();
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  node.addEventListener("blur", onNodeBlur);
+}
+
+function onNodeBlur(e) {
+  const node = e.currentTarget;
+  node.removeEventListener("blur", onNodeBlur);
+  node.contentEditable = "false";
+  node.classList.remove("editing");
+}
+
+function finishEditAll() {
+  nodes.forEach(node => {
+    if (node.isContentEditable) {
+      node.contentEditable = "false";
+      node.classList.remove("editing");
+    }
+  });
+}
+
+/* 移動モード */
+
+canvas.addEventListener("pointermove", e => {
+  if (mode !== "move") return;
+  if (!dragState) return;
+
+  const { node, offsetX, offsetY } = dragState;
+  const x = e.pageX - offsetX + canvas.scrollLeft;
+  const y = e.pageY - offsetY + canvas.scrollTop;
+
+  node.style.left = `${x}px`;
+  node.style.top = `${y}px`;
+
+  updateArrowsForNode(node);
 });
 
-// ───────────────────────────────
-// 編集
-// ───────────────────────────────
-function startEdit(node) {
-  node.contentEditable = "true";
-  node.focus();
+canvas.addEventListener("pointerup", () => {
+  dragState = null;
+});
+
+function startMove(node, e) {
+  const rect = node.getBoundingClientRect();
+  dragState = {
+    node,
+    offsetX: e.pageX - rect.left,
+    offsetY: e.pageY - rect.top
+  };
 }
 
-function finishEdit(node) {
-  node.contentEditable = "false";
-  node.blur();
-}
+/* 矢印モード */
 
-// ───────────────────────────────
-// リンク作成
-// ───────────────────────────────
-function handleLinkStart(node) {
-  if (node.isContentEditable) return;
-
-  if (linkStartNode && linkStartNode !== node) {
-    createLink(linkStartNode, node);
+function handleLink(node) {
+  if (!linkStartNode) {
+    linkStartNode = node;
+    return;
+  }
+  if (linkStartNode === node) {
     linkStartNode = null;
     return;
   }
-
-  linkStartNode = node;
+  createArrow(linkStartNode, node);
+  linkStartNode = null;
 }
 
-function createLink(from, to) {
-  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-  line.setAttribute("stroke", "#333");
-  line.setAttribute("stroke-width", "2");
-  line.setAttribute("marker-end", "url(#arrow)");
+function createArrow(fromNode, toNode) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("arrow");
 
-  // ▼ 矢印短タップ選択＋長押し削除
-  line.addEventListener("pointerdown", (e) => {
-    e.stopPropagation();
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "100%");
 
-    // 選択
-    if (selectedLink === line) {
-      line.classList.remove("selected");
-      selectedLink = null;
-    } else {
-      if (selectedLink) selectedLink.classList.remove("selected");
-      selectedLink = line;
-      line.classList.add("selected");
-    }
+  const defs = document.createElementNS(svgNS, "defs");
+  const marker = document.createElementNS(svgNS, "marker");
+  marker.setAttribute("id", "arrowhead");
+  marker.setAttribute("markerWidth", "10");
+  marker.setAttribute("markerHeight", "7");
+  marker.setAttribute("refX", "10");
+  marker.setAttribute("refY", "3.5");
+  marker.setAttribute("orient", "auto");
+  const markerPath = document.createElementNS(svgNS, "path");
+  markerPath.setAttribute("d", "M0,0 L10,3.5 L0,7 Z");
+  markerPath.setAttribute("fill", "#616161");
+  marker.appendChild(markerPath);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
 
-    // 長押し削除
-    const timer = setTimeout(() => {
-      deleteLink(line);
-      selectedLink = null;
-    }, 700);
-
-    line.addEventListener("pointerup", () => clearTimeout(timer), { once: true });
-  });
-
+  const line = document.createElementNS(svgNS, "line");
+  line.classList.add("arrow-line");
   svg.appendChild(line);
-  links.push({ from, to, line });
-  updateLinkPosition(from, to, line);
-}
 
-function updateLinkPosition(from, to, line) {
-  const fx = from.offsetLeft;
-  const fy = from.offsetTop;
-  const fw = from.offsetWidth;
-  const fh = from.offsetHeight;
+  wrapper.appendChild(svg);
+  canvas.appendChild(wrapper);
 
-  const tx = to.offsetLeft;
-  const ty = to.offsetTop;
-  const tw = to.offsetWidth;
-  const th = to.offsetHeight;
+  const arrow = { wrapper, svg, line, fromNode, toNode };
+  arrows.push(arrow);
 
-  const cx1 = fx + fw / 2;
-  const cy1 = fy + fh / 2;
-  const cx2 = tx + tw / 2;
-  const cy2 = ty + th / 2;
+  updateArrowPosition(arrow);
 
-  const dx = cx2 - cx1;
-  const dy = cy2 - cy1;
-
-  let x1, y1;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    x1 = dx > 0 ? fx + fw : fx;
-    y1 = cy1;
-  } else {
-    y1 = dy > 0 ? fy + fh : fy;
-    x1 = cx1;
-  }
-
-  let x2, y2;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    x2 = dx > 0 ? tx : tx + tw;
-    y2 = cy2;
-  } else {
-    y2 = dy > 0 ? ty : ty + th;
-    x2 = cx2;
-  }
-
-  line.setAttribute("x1", x1);
-  line.setAttribute("y1", y1);
-  line.setAttribute("x2", x2);
-  line.setAttribute("y2", y2);
-}
-
-function updateLinksForNode(node) {
-  links.forEach(link => {
-    if (link.from === node || link.to === node) {
-      updateLinkPosition(link.from, link.to, link.line);
+  wrapper.addEventListener("pointerdown", e => {
+    e.stopPropagation();
+    if (mode === "delete") {
+      handleDeleteArrow(arrow);
     }
   });
 }
 
-// ───────────────────────────────
-// 削除
-// ───────────────────────────────
-function deleteNode(node) {
-  links
-    .filter(link => link.from === node || link.to === node)
-    .forEach(link => link.line.remove());
+function updateArrowPosition(arrow) {
+  const rectCanvas = canvas.getBoundingClientRect();
+  const rectFrom = arrow.fromNode.getBoundingClientRect();
+  const rectTo = arrow.toNode.getBoundingClientRect();
 
-  for (let i = links.length - 1; i >= 0; i--) {
-    if (links[i].from === node || links[i].to === node) links.splice(i, 1);
-  }
+  const x1 = rectFrom.left + rectFrom.width / 2 - rectCanvas.left + canvas.scrollLeft;
+  const y1 = rectFrom.top + rectFrom.height / 2 - rectCanvas.top + canvas.scrollTop;
+  const x2 = rectTo.left + rectTo.width / 2 - rectCanvas.left + canvas.scrollLeft;
+  const y2 = rectTo.top + rectTo.height / 2 - rectCanvas.top + canvas.scrollTop;
 
-  node.remove();
+  const minX = Math.min(x1, x2);
+  const minY = Math.min(y1, y2);
+  const width = Math.abs(x2 - x1);
+  const height = Math.abs(y2 - y1);
+
+  arrow.wrapper.style.left = `${minX}px`;
+  arrow.wrapper.style.top = `${minY}px`;
+  arrow.wrapper.style.width = `${width || 1}px`;
+  arrow.wrapper.style.height = `${height || 1}px`;
+
+  arrow.svg.setAttribute("width", width || 1);
+  arrow.svg.setAttribute("height", height || 1);
+
+  arrow.line.setAttribute("x1", x1 < x2 ? 0 : width);
+  arrow.line.setAttribute("y1", y1 < y2 ? 0 : height);
+  arrow.line.setAttribute("x2", x1 < x2 ? width : 0);
+  arrow.line.setAttribute("y2", y1 < y2 ? height : 0);
 }
 
-function deleteLink(line) {
-  line.remove();
-  for (let i = links.length - 1; i >= 0; i--) {
-    if (links[i].line === line) {
-      links.splice(i, 1);
-      break;
+function updateArrowsForNode(node) {
+  arrows.forEach(arrow => {
+    if (arrow.fromNode === node || arrow.toNode === node) {
+      updateArrowPosition(arrow);
     }
+  });
+}
+
+/* 削除モード */
+
+function clearDeleteSelection() {
+  deleteSelected = null;
+  nodes.forEach(n => n.classList.remove("selected-delete"));
+  arrows.forEach(a => a.wrapper.classList.remove("selected-delete"));
+}
+
+function handleDeleteNode(node) {
+  if (deleteSelected === node) {
+    // 削除
+    arrows = arrows.filter(a => {
+      if (a.fromNode === node || a.toNode === node) {
+        a.wrapper.remove();
+        return false;
+      }
+      return true;
+    });
+    nodes = nodes.filter(n => n !== node);
+    node.remove();
+    deleteSelected = null;
+  } else {
+    clearDeleteSelection();
+    deleteSelected = node;
+    node.classList.add("selected-delete");
+  }
+}
+
+function handleDeleteArrow(arrow) {
+  if (deleteSelected === arrow) {
+    arrow.wrapper.remove();
+    arrows = arrows.filter(a => a !== arrow);
+    deleteSelected = null;
+  } else {
+    clearDeleteSelection();
+    deleteSelected = arrow;
+    arrow.wrapper.classList.add("selected-delete");
+  }
+}
+
+/* キャンバスクリックで状態リセット（リンク開始・削除選択など） */
+
+canvas.addEventListener("pointerdown", () => {
+  if (mode === "link") {
+    linkStartNode = null;
+  }
+  if (mode === "delete") {
+    clearDeleteSelection();
+  }
+});
+
+/* 読込 / 保存 */
+
+exportBtn.addEventListener("click", () => {
+  const data = {
+    nodes: nodes.map(n => ({
+      type: n.classList.contains("start") ? "start" :
+            n.classList.contains("action") ? "action" : "check",
+      text: n.textContent,
+      left: n.style.left,
+      top: n.style.top
+    })),
+    arrows: arrows.map(a => ({
+      fromIndex: nodes.indexOf(a.fromNode),
+      toIndex: nodes.indexOf(a.toNode)
+    }))
+  };
+  const json = JSON.stringify(data, null, 2);
+  navigator.clipboard?.writeText(json).catch(() => {});
+  importArea.value = json;
+});
+
+importBtn.addEventListener("click", () => {
+  try {
+    const data = JSON.parse(importArea.value);
+    loadFromData(data);
+  } catch (e) {
+    alert("JSON の形式が不正です");
+  }
+});
+
+function loadFromData(data) {
+  // 既存クリア
+  nodes.forEach(n => n.remove());
+  arrows.forEach(a => a.wrapper.remove());
+  nodes = [];
+  arrows = [];
+  deleteSelected = null;
+  linkStartNode = null;
+
+  if (!data || !Array.isArray(data.nodes)) return;
+
+  data.nodes.forEach(n => {
+    const node = document.createElement("div");
+    node.classList.add("node", n.type === "start" ? "start" : n.type === "action" ? "action" : "check");
+    node.textContent = n.text || "";
+    node.style.left = n.left || "100px";
+    node.style.top = n.top || "100px";
+    canvas.appendChild(node);
+    nodes.push(node);
+    node.addEventListener("pointerdown", onNodePointerDown);
+  });
+
+  if (Array.isArray(data.arrows)) {
+    data.arrows.forEach(a => {
+      const fromNode = nodes[a.fromIndex];
+      const toNode = nodes[a.toIndex];
+      if (fromNode && toNode) {
+        createArrow(fromNode, toNode);
+      }
+    });
   }
 }
