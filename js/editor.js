@@ -546,24 +546,25 @@ function autoAlignTree() {
     }
 
     list.forEach((node, i) => {
-    const x = 40 + d * colWidth;
-    let y = 40 + i * rowHeight;
-  
-    // ★ 親より上に行かないように補正
-    const parents = findParents(node);
-    if (parents.length > 0) {
-      const minParentY = Math.min(...parents.map(p => parseInt(p.style.top)));
-      if (y < minParentY) {
-        y = minParentY;
+      const x = 40 + d * colWidth;
+      let y = 40 + i * rowHeight;
+
+      // ★ 親より上に行かないように補正
+      const parents = findParents(node);
+      if (parents.length > 0) {
+        const minParentY = Math.min(...parents.map(p => parseInt(p.style.top)));
+        if (y < minParentY) {
+          y = minParentY;
+        }
       }
-    }
-  
-    node.style.left = `${x}px`;
-    node.style.top = `${y}px`;
-    updateArrowsForNode(node);
+
+      node.style.left = `${x}px`;
+      node.style.top = `${y}px`;
+      updateArrowsForNode(node);
+    });
   });
+
   saveData();
-  }
 }
 
 function findParents(node) {
