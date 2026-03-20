@@ -251,39 +251,16 @@ function handleLink(node) {
 }
 
 function createArrow(fromNode, toNode) {
-  const svgNS = "http://www.w3.org/2000/svg";
   const wrapper = document.createElement("div");
   wrapper.classList.add("arrow");
 
-  const svg = document.createElementNS(svgNS, "svg");
-  svg.setAttribute("width", "100%");
-  svg.setAttribute("height", "100%");
-
-  const defs = document.createElementNS(svgNS, "defs");
-  const marker = document.createElementNS(svgNS, "marker");
-  marker.setAttribute("id", "arrowhead");
-  marker.setAttribute("markerWidth", "10");
-  marker.setAttribute("markerHeight", "7");
-  marker.setAttribute("refX", "10");
-  marker.setAttribute("refY", "3.5");
-  marker.setAttribute("orient", "auto");
-
-  const markerPath = document.createElementNS(svgNS, "path");
-  markerPath.setAttribute("d", "M0,0 L10,3.5 L0,7 Z");
-  markerPath.setAttribute("fill", "#616161");
-
-  marker.appendChild(markerPath);
-  defs.appendChild(marker);
-  svg.appendChild(defs);
-
-  const line = document.createElementNS(svgNS, "line");
+  const line = document.createElement("div");
   line.classList.add("arrow-line");
-  svg.appendChild(line);
 
-  wrapper.appendChild(svg);
+  wrapper.appendChild(line);
   canvas.appendChild(wrapper);
 
-  const arrow = { wrapper, svg, line, fromNode, toNode };
+  const arrow = { wrapper, line, fromNode, toNode };
   arrows.push(arrow);
 
   updateArrowPosition(arrow);
@@ -683,18 +660,50 @@ function createArrowElement() {
   return arrow;
 }
 
-function updateArrowPosition(arrow, x1, y1, x2, y2) {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const length = Math.sqrt(dx*dx + dy*dy);
-  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+function updateArrowPosition(arrow) {
+  const rectCanvas = canvas.getBoundingClientRect();
+  const rectFrom = arrow.fromNode.getBoundingClientRect();
+  const rectTo = arrow.toNode.getBoundingClientRect();
 
-  arrow.style.left = `${x1}px`;
-  arrow.style.top = `${y1}px`;
+  // ノード中心
+  let cx1 = rectFrom.left + rectFrom.width / 2;
+  let cy1 = rectFrom.top + rectFrom.height / 2;
+  let cx2 = rectTo.left + rectTo.width / 2;
+  let cy2 = rectTo.top + rectTo.height / 2;
 
-  const line = arrow.querySelector(".arrow-line");
-  line.style.width = `${length}px`;
-  line.style.transform = `rotate(${angle}deg)`;
+  // ベクトル
+  const dx = cx2 - cx1;
+  const dy = cy2 - cy1;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = dx / len;
+  const ny = dy / len;
+
+  // ノード外周まで押し出す
+  const fromOffset = Math.min(rectFrom.width, rectFrom.height) / 2 + 4;
+  const toOffset   = Math.min(rectTo.width, rectTo.height) / 2 + 4;
+
+  let x1 = cx1 + nx * fromOffset;
+  let y1 = cy1 + ny * fromOffset;
+  let x2 = cx2 - nx * toOffset;
+  let y2 = cy2 - ny * toOffset;
+
+  // キャンバス座標へ
+  x1 -= rectCanvas.left - canvas.scrollLeft;
+  y1 -= rectCanvas.top - canvas.scrollTop;
+  x2 -= rectCanvas.left - canvas.scrollLeft;
+  y2 -= rectCanvas.top - canvas.scrollTop;
+
+  // CSS 矢印の描画
+  const dx2 = x2 - x1;
+  const dy2 = y2 - y1;
+  const length = Math.sqrt(dx2*dx2 + dy2*dy2);
+  const angle = Math.atan2(dy2, dx2) * 180 / Math.PI;
+
+  arrow.wrapper.style.left = `${x1}px`;
+  arrow.wrapper.style.top = `${y1}px`;
+
+  arrow.line.style.width = `${length}px`;
+  arrow.line.style.transform = `rotate(${angle}deg)`;
 }
 
 
