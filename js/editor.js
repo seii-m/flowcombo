@@ -440,8 +440,21 @@ exportBtn.addEventListener("click", () => {
   };
 
   const json = JSON.stringify(data, null, 2);
+
+  // クリップボードコピー（従来機能）
   navigator.clipboard?.writeText(json).catch(() => {});
   importArea.value = json;
+
+  // ★ ファイル保存（スマホ対応）
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = (titleInput.value || "flowcombo") + ".json";
+  a.click();
+
+  URL.revokeObjectURL(url);
 });
 
 importBtn.addEventListener("click", () => {
@@ -572,10 +585,21 @@ function loadData() {
 
   try {
     const data = JSON.parse(json);
+
+    // ★ バージョンチェック
+    if (!data.version || data.version < 1) {
+      console.warn("古いバージョンのデータを検出。必要なら変換処理を追加できます。");
+    }
+
     loadFromData(data);
   } catch (e) {
     console.error("自動保存データの読み込みに失敗:", e);
   }
+}
+
+function migrateData(data) {
+  // 例: version 0 → 1 の変換処理を書く
+  return data;
 }
 
 window.addEventListener("load", loadData);
