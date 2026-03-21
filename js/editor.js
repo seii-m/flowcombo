@@ -510,7 +510,6 @@ function autoAlignTree() {
   const children = buildTree();
   const depth = computeDepths(children);
 
-  // depth → ノード配列
   const columns = new Map();
   nodes.forEach(n => {
     const d = depth.get(n) || 0;
@@ -523,7 +522,7 @@ function autoAlignTree() {
 
   columns.forEach((list, d) => {
 
-    // ★ 兄弟グループを作る
+    // ★ 兄弟グループ化
     const groups = [];
     const used = new Set();
 
@@ -532,7 +531,6 @@ function autoAlignTree() {
 
       const parents = findParents(node);
       if (parents.length === 0) {
-        // 親なし → 単独グループ
         groups.push([node]);
         used.add(node);
         return;
@@ -540,15 +538,13 @@ function autoAlignTree() {
 
       const p = parents[0];
       const siblings = children.get(p) || [];
-
-      // 同じ depth にいる兄弟だけまとめる
       const group = siblings.filter(s => list.includes(s));
 
       group.forEach(s => used.add(s));
       groups.push(group);
     });
 
-    // ★ グループを親の Y 順でソート
+    // ★ 親の位置でグループをソート
     groups.sort((g1, g2) => {
       const p1 = findParents(g1[0])[0];
       const p2 = findParents(g2[0])[0];
@@ -557,19 +553,30 @@ function autoAlignTree() {
       return y1 - y2;
     });
 
-    // ★ グループごとに縦に並べる
+    // ★ グループごとに配置
     let index = 0;
     groups.forEach(group => {
-      group.forEach(node => {
-        const x = 40 + d * colWidth;
-        const y = 40 + index * rowHeight;
+      const x = 40 + d * colWidth;
+      let groupStartY = 40 + index * rowHeight;
 
+      // ★ 親より上に行かないようにグループ全体を補正
+      const parent = findParents(group[0])[0];
+      if (parent) {
+        const parentY = parseInt(parent.style.top);
+        if (groupStartY < parentY) {
+          groupStartY = parentY;
+        }
+      }
+
+      // ★ グループ内のノードを配置
+      group.forEach((node, i) => {
+        const y = groupStartY + i * rowHeight;
         node.style.left = `${x}px`;
         node.style.top = `${y}px`;
         updateArrowsForNode(node);
-
-        index++;
       });
+
+      index += group.length;
     });
   });
 
