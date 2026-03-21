@@ -752,5 +752,21 @@ function getRectEdgePoint(rect, tx, ty) {
   };
 }
 
+document.getElementById("save-image-btn").addEventListener("click", () => {
+  const target = document.getElementById("canvas");
+
+  html2canvas(target, {
+    backgroundColor: "#ffffff", // 白背景（透明にしたいなら null）
+    scale: 2, // 高解像度
+  }).then(canvas => {
+    const url = canvas.toDataURL("image/png");
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = (titleInput.value || "flowcombo") + ".png";
+    a.click();
+  });
+});
+
 
 
