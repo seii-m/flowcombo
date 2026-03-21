@@ -517,8 +517,8 @@ function autoAlignTree() {
     columns.get(d).push(n);
   });
 
-  const colWidth = 140;
-  const rowHeight = 70;
+  const colWidth = 160;
+  const marginY = 20; // ノード間の余白
 
   columns.forEach((list, d) => {
 
@@ -553,30 +553,28 @@ function autoAlignTree() {
       return y1 - y2;
     });
 
-    // ★ グループごとに配置
-    let index = 0;
+    // ★ グループごとに配置（高さ考慮）
+    let currentY = 40;
+
     groups.forEach(group => {
       const x = 40 + d * colWidth;
-      let groupStartY = 40 + index * rowHeight;
 
-      // ★ 親より上に行かないようにグループ全体を補正
+      // 親より上に行かない補正
       const parent = findParents(group[0])[0];
       if (parent) {
         const parentY = parseInt(parent.style.top);
-        if (groupStartY < parentY) {
-          groupStartY = parentY;
-        }
+        if (currentY < parentY) currentY = parentY;
       }
 
-      // ★ グループ内のノードを配置
-      group.forEach((node, i) => {
-        const y = groupStartY + i * rowHeight;
+      // グループ内のノードを配置（高さ考慮）
+      group.forEach(node => {
         node.style.left = `${x}px`;
-        node.style.top = `${y}px`;
+        node.style.top = `${currentY}px`;
         updateArrowsForNode(node);
-      });
 
-      index += group.length;
+        const h = node.getBoundingClientRect().height;
+        currentY += h + marginY; // ★ 高さ + 余白
+      });
     });
   });
 
