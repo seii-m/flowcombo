@@ -753,6 +753,8 @@ function getRectEdgePoint(rect, tx, ty) {
 }
 
 document.getElementById("save-image-btn").addEventListener("click", () => {
+  if (!confirm("現在のフローを画像保存しますか？")) return;
+
   const target = document.getElementById("canvas");
 
   html2canvas(target, {
@@ -767,19 +769,14 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
 
     let minX = w, minY = h, maxX = 0, maxY = 0;
 
-    // ★ 透明 or 白以外のピクセルを探す
+    // ★ 描画されている部分を検出（透明以外）
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const idx = (y * w + x) * 4;
-        const r = imgData[idx];
-        const g = imgData[idx + 1];
-        const b = imgData[idx + 2];
         const a = imgData[idx + 3];
 
-        // 完全透明 → 無視
-        if (a === 0) continue;
+        if (a === 0) continue; // 完全透明 → 無視
 
-        // 透明じゃない → 描画あり
         if (x < minX) minX = x;
         if (y < minY) minY = y;
         if (x > maxX) maxX = x;
@@ -812,14 +809,47 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
       trimH
     );
 
+    // ★ タイトル描画
+    const title = titleInput.value || "FlowCombo";
+    const fontSize = 32;
+    const titlePad = 20;
+
+    const finalCanvas = document.createElement("canvas");
+    finalCanvas.width = trimmed.width;
+    finalCanvas.height = trimmed.height + fontSize + titlePad * 2;
+
+    const fctx = finalCanvas.getContext("2d");
+    fctx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+    // タイトル
+    fctx.font = `${fontSize}px sans-serif`;
+    fctx.fillStyle = "white";
+    fctx.textAlign = "center";
+    fctx.textBaseline = "top";
+
+    // 影
+    fctx.shadowColor = "rgba(0,0,0,0.4)";
+    fctx.shadowBlur = 4;
+    fctx.shadowOffsetX = 2;
+    fctx.shadowOffsetY = 2;
+
+    fctx.fillText(title, finalCanvas.width / 2, titlePad);
+
+    // 影リセット
+    fctx.shadowColor = "transparent";
+
+    // 本体画像
+    fctx.drawImage(trimmed, 0, fontSize + titlePad * 2);
+
     // ★ PNG 保存
-    const url = trimmed.toDataURL("image/png");
+    const url = finalCanvas.toDataURL("image/png");
     const a = document.createElement("a");
     a.href = url;
-    a.download = (titleInput.value || "flowcombo") + ".png";
+    a.download = title + ".png";
     a.click();
   });
 });
+
 
 
 
