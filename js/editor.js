@@ -808,8 +808,8 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
       trimW,
       trimH
     );
-
-    // ★ タイトル描画
+    
+    // ★ タイトル描画（黒字＋白枠）
     const title = titleInput.value || "FlowCombo";
     const fontSize = 32;
     const titlePad = 20;
@@ -821,25 +821,21 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
     const fctx = finalCanvas.getContext("2d");
     fctx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
     
-    // タイトル（黒字・左上）
+    // フォント設定
     fctx.font = `${fontSize}px sans-serif`;
-    fctx.fillStyle = "black";
     fctx.textAlign = "left";
     fctx.textBaseline = "top";
     
-    // 影（薄め）
-    fctx.shadowColor = "rgba(0,0,0,0.2)";
-    fctx.shadowBlur = 2;
-    fctx.shadowOffsetX = 1;
-    fctx.shadowOffsetY = 1;
+    // ★ 縁取り（白）
+    fctx.lineWidth = 4;
+    fctx.strokeStyle = "white";
+    fctx.strokeText(title, titlePad, titlePad);
     
-    // 左上に描画
+    // ★ 本文（黒）
+    fctx.fillStyle = "black";
     fctx.fillText(title, titlePad, titlePad);
     
-    // 影リセット
-    fctx.shadowColor = "transparent";
-    
-    // 本体画像を下に描画
+    // 本体画像
     fctx.drawImage(trimmed, 0, fontSize + titlePad * 2);
 
     // ★ PNG 保存
