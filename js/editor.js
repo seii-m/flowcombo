@@ -809,34 +809,40 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
       trimH
     );
     
-    // ★ タイトル描画（黒字＋白枠）
+    // ★ タイトル描画（黒字＋白枠＋背景帯）
     const title = titleInput.value || "FlowCombo";
     const fontSize = 32;
     const titlePad = 20;
+    const titleHeight = fontSize + titlePad * 2;
     
+    // finalCanvas = タイトル帯ぶん縦に伸ばす
     const finalCanvas = document.createElement("canvas");
     finalCanvas.width = trimmed.width;
-    finalCanvas.height = trimmed.height + fontSize + titlePad * 2;
+    finalCanvas.height = trimmed.height + titleHeight;
     
     const fctx = finalCanvas.getContext("2d");
     fctx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
     
-    // フォント設定
+    // ★ タイトル帯（背景を不透明にする）
+    fctx.fillStyle = "rgba(255,255,255,1)"; // ← 白背景（透過なし）
+    fctx.fillRect(0, 0, finalCanvas.width, titleHeight);
+    
+    // ★ タイトル文字（黒字＋白枠）
     fctx.font = `${fontSize}px sans-serif`;
     fctx.textAlign = "left";
     fctx.textBaseline = "top";
     
-    // ★ 縁取り（白）
+    // 縁取り（白）
     fctx.lineWidth = 4;
     fctx.strokeStyle = "white";
     fctx.strokeText(title, titlePad, titlePad);
     
-    // ★ 本文（黒）
+    // 本文（黒）
     fctx.fillStyle = "black";
     fctx.fillText(title, titlePad, titlePad);
     
-    // 本体画像
-    fctx.drawImage(trimmed, 0, fontSize + titlePad * 2);
+    // ★ 本体画像を下に描画
+    fctx.drawImage(trimmed, 0, titleHeight);
 
     // ★ PNG 保存
     const url = finalCanvas.toDataURL("image/png");
