@@ -813,32 +813,33 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
     const title = titleInput.value || "FlowCombo";
     const fontSize = 32;
     const titlePad = 20;
-
+    
     const finalCanvas = document.createElement("canvas");
     finalCanvas.width = trimmed.width;
     finalCanvas.height = trimmed.height + fontSize + titlePad * 2;
-
+    
     const fctx = finalCanvas.getContext("2d");
     fctx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
-
-    // タイトル
+    
+    // タイトル（黒字・左上）
     fctx.font = `${fontSize}px sans-serif`;
     fctx.fillStyle = "black";
-    fctx.textAlign = "center";
+    fctx.textAlign = "left";
     fctx.textBaseline = "top";
-
-    // 影
-    fctx.shadowColor = "rgba(0,0,0,0.4)";
-    fctx.shadowBlur = 4;
-    fctx.shadowOffsetX = 2;
-    fctx.shadowOffsetY = 2;
-
-    fctx.fillText(title, finalCanvas.width / 2, titlePad);
-
+    
+    // 影（薄め）
+    fctx.shadowColor = "rgba(0,0,0,0.2)";
+    fctx.shadowBlur = 2;
+    fctx.shadowOffsetX = 1;
+    fctx.shadowOffsetY = 1;
+    
+    // 左上に描画
+    fctx.fillText(title, titlePad, titlePad);
+    
     // 影リセット
     fctx.shadowColor = "transparent";
-
-    // 本体画像
+    
+    // 本体画像を下に描画
     fctx.drawImage(trimmed, 0, fontSize + titlePad * 2);
 
     // ★ PNG 保存
