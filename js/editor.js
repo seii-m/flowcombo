@@ -393,7 +393,7 @@ exportBtn.addEventListener("click", () => {
     nodes: nodes.map(n => ({
       id: n.dataset.id,
       type: n.dataset.type,
-      text: n.textContent,
+      text: n.innerHTML,
       left: n.style.left,
       top: n.style.top
     })),
@@ -460,7 +460,9 @@ function loadFromData(data) {
     node.dataset.id = n.id;
     node.dataset.type = n.type;
     node.classList.add("node", n.type);
-    node.textContent = n.text || "";
+    node.innerHTML = (n.text || "")
+      .replace(/<div>/g, "<br>")
+      .replace(/<\/div>/g, "");
     node.style.left = n.left || "100px";
     node.style.top = n.top || "100px";
     canvas.appendChild(node);
@@ -516,37 +518,58 @@ function autoAlignTree() {
     columns.get(d).push(n);
   });
 
-  const colWidth = 150;
-  const rowHeight =100;
+  const colWidth = 140;
+  const rowHeight = 70;
 
-  // ★ depth ごとに「親の位置」でソートする
   columns.forEach((list, d) => {
-    if (d > 0) {
-      list.sort((a, b) => {
-        const pa = findParents(a)[0];
-        const pb = findParents(b)[0];
-        const ya = pa ? parseInt(pa.style.top) : 0;
-        const yb = pb ? parseInt(pb.style.top) : 0;
-        return ya - yb;
-      });
-    }
 
-    list.forEach((node, i) => {
-      const x = 40 + d * colWidth;
-      let y = 40 + i * rowHeight;
+    // ★ 兄弟グループを作る
+    const groups = [];
+    const used = new Set();
 
-      // ★ 親より上に行かないように補正
+    list.forEach(node => {
+      if (used.has(node)) return;
+
       const parents = findParents(node);
-      if (parents.length > 0) {
-        const minParentY = Math.min(...parents.map(p => parseInt(p.style.top)));
-        if (y < minParentY) {
-          y = minParentY;
-        }
+      if (parents.length === 0) {
+        // 親なし → 単独グループ
+        groups.push([node]);
+        used.add(node);
+        return;
       }
 
-      node.style.left = `${x}px`;
-      node.style.top = `${y}px`;
-      updateArrowsForNode(node);
+      const p = parents[0];
+      const siblings = children.get(p) || [];
+
+      // 同じ depth にいる兄弟だけまとめる
+      const group = siblings.filter(s => list.includes(s));
+
+      group.forEach(s => used.add(s));
+      groups.push(group);
+    });
+
+    // ★ グループを親の Y 順でソート
+    groups.sort((g1, g2) => {
+      const p1 = findParents(g1[0])[0];
+      const p2 = findParents(g2[0])[0];
+      const y1 = p1 ? parseInt(p1.style.top) : 0;
+      const y2 = p2 ? parseInt(p2.style.top) : 0;
+      return y1 - y2;
+    });
+
+    // ★ グループごとに縦に並べる
+    let index = 0;
+    groups.forEach(group => {
+      group.forEach(node => {
+        const x = 40 + d * colWidth;
+        const y = 40 + index * rowHeight;
+
+        node.style.left = `${x}px`;
+        node.style.top = `${y}px`;
+        updateArrowsForNode(node);
+
+        index++;
+      });
     });
   });
 
