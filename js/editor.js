@@ -620,7 +620,7 @@ function saveData() {
     nodes: nodes.map(n => ({
       id: n.dataset.id,
       type: n.dataset.type,
-      text: n.textContent,
+      text: n.innerHTML,
       left: n.style.left,
       top: n.style.top
     })),
