@@ -823,8 +823,8 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
 
     // タイトル
     fctx.font = `${fontSize}px sans-serif`;
-    fctx.fillStyle = "white";
-    fctx.textAlign = "center";
+    fctx.fillStyle = "black";
+    fctx.textAlign = "left";
     fctx.textBaseline = "top";
 
     // 影
