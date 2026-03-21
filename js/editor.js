@@ -756,11 +756,64 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
   const target = document.getElementById("canvas");
 
   html2canvas(target, {
-    backgroundColor: "#ffffff", // 白背景（透明にしたいなら null）
-    scale: 2, // 高解像度
+    backgroundColor: null, // ★ 背景透過
+    scale: 2
   }).then(canvas => {
-    const url = canvas.toDataURL("image/png");
 
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+    const imgData = ctx.getImageData(0, 0, w, h).data;
+
+    let minX = w, minY = h, maxX = 0, maxY = 0;
+
+    // ★ 透明 or 白以外のピクセルを探す
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const idx = (y * w + x) * 4;
+        const r = imgData[idx];
+        const g = imgData[idx + 1];
+        const b = imgData[idx + 2];
+        const a = imgData[idx + 3];
+
+        // 完全透明 → 無視
+        if (a === 0) continue;
+
+        // 透明じゃない → 描画あり
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
+
+    // ★ 余白20px
+    const pad = 20;
+
+    const trimW = (maxX - minX + 1) + pad * 2;
+    const trimH = (maxY - minY + 1) + pad * 2;
+
+    const trimmed = document.createElement("canvas");
+    trimmed.width = trimW;
+    trimmed.height = trimH;
+
+    const tctx = trimmed.getContext("2d");
+
+    // ★ 透明背景のまま切り抜き
+    tctx.drawImage(
+      canvas,
+      minX - pad,
+      minY - pad,
+      trimW,
+      trimH,
+      0,
+      0,
+      trimW,
+      trimH
+    );
+
+    // ★ PNG 保存
+    const url = trimmed.toDataURL("image/png");
     const a = document.createElement("a");
     a.href = url;
     a.download = (titleInput.value || "flowcombo") + ".png";
