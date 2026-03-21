@@ -386,7 +386,7 @@ canvas.addEventListener("pointerdown", e => {
 ────────────────────────────── */
         
 exportBtn.addEventListener("click", () => {
-  if (!confirm("現在のフローを保存しますか？")) return;
+  if (!confirm("フローを保存しますか？")) return;
   const data = {
     version: 1,
     title: titleInput.value || "無題のフロー",
@@ -753,7 +753,7 @@ function getRectEdgePoint(rect, tx, ty) {
 }
 
 document.getElementById("save-image-btn").addEventListener("click", () => {
-  if (!confirm("現在のフローを画像保存しますか？")) return;
+  if (!confirm("フローを画像として保存しますか？")) return;
 
   const target = document.getElementById("canvas");
 
@@ -849,7 +849,6 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
     a.click();
   });
 });
-
 
 
 
