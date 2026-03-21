@@ -824,7 +824,7 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
     // タイトル
     fctx.font = `${fontSize}px sans-serif`;
     fctx.fillStyle = "black";
-    fctx.textAlign = "left";
+    fctx.textAlign = "center";
     fctx.textBaseline = "top";
 
     // 影
