@@ -283,49 +283,33 @@ function createArrow(fromNode, toNode) {
 let currentScale = 1; // ★ 追加
 
 function updateArrowPosition(arrow) {
-  const from = arrow.fromNode;
-  const to = arrow.toNode;
+  const rectCanvas = canvas.getBoundingClientRect();
+  const rectFrom = arrow.fromNode.getBoundingClientRect();
+  const rectTo = arrow.toNode.getBoundingClientRect();
 
-  if (!from || !to) return;
+  const scale = currentScale || 1; // ← zoom 値
 
-  const fromX = from.offsetLeft + from.offsetWidth / 2;
-  const fromY = from.offsetTop + from.offsetHeight / 2;
+  // ノード外周の交点を取得
+  const p1 = getRectEdgePoint(rectFrom, rectTo.left, rectTo.top);
+  const p2 = getRectEdgePoint(rectTo, rectFrom.left, rectFrom.top);
 
-  const toX = to.offsetLeft + to.offsetWidth / 2;
-  const toY = to.offsetTop + to.offsetHeight / 2;
+  // キャンバス座標へ（scale 補正）
+  const x1 = (p1.x - rectCanvas.left) / scale + canvas.scrollLeft;
+  const y1 = (p1.y - rectCanvas.top) / scale + canvas.scrollTop;
+  const x2 = (p2.x - rectCanvas.left) / scale + canvas.scrollLeft;
+  const y2 = (p2.y - rectCanvas.top) / scale + canvas.scrollTop;
 
-  const dx = toX - fromX;
-  const dy = toY - fromY;
-  const len = Math.hypot(dx, dy);
-
-  if (!len) return;
-
-  const nx = dx / len;
-  const ny = dy / len;
-
-  const fromR = Math.min(from.offsetWidth, from.offsetHeight) / 2;
-  const toR = Math.min(to.offsetWidth, to.offsetHeight) / 2;
-
-  const startX = fromX + nx * fromR;
-  const startY = fromY + ny * fromR;
-
-  const endX = toX - nx * toR;
-  const endY = toY - ny * toR;
-
-  // ★ CSS矢印の wrapper と line を更新
-  const x = Math.min(startX, endX);
-  const y = Math.min(startY, endY);
-  const w = Math.abs(endX - startX);
-  const h = Math.abs(endY - startY);
-
-  arrow.wrapper.style.left = `${x}px`;
-  arrow.wrapper.style.top = `${y}px`;
-  arrow.wrapper.style.width = `${w}px`;
-  arrow.wrapper.style.height = `${h}px`;
-
+  // CSS 矢印描画
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const length = Math.hypot(dx, dy);
   const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+  arrow.wrapper.style.left = `${x1}px`;
+  arrow.wrapper.style.top = `${y1}px`;
+
+  arrow.line.style.width = `${length}px`;
   arrow.line.style.transform = `rotate(${angle}deg)`;
-  arrow.line.style.width = `${len}px`;
 }
 
 function updateArrowsForNode(node) {
