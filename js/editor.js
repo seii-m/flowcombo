@@ -286,29 +286,84 @@ function updateArrowPosition(arrow) {
   const from = arrow.fromNode;
   const to = arrow.toNode;
 
+  if (!from || !to) return;
+
+  const scale = currentScale || 1;
+
   const rectCanvas = canvas.getBoundingClientRect();
   const rectFrom = from.getBoundingClientRect();
   const rectTo = to.getBoundingClientRect();
 
+  // ノード中心
   const fromCX = rectFrom.left + rectFrom.width / 2;
   const fromCY = rectFrom.top + rectFrom.height / 2;
   const toCX   = rectTo.left + rectTo.width / 2;
   const toCY   = rectTo.top + rectTo.height / 2;
 
-  // ★ 角丸矩形の外枠との交点
-  const p1 = getRoundedRectEdgePoint(rectFrom, fromCX, fromCY, toCX, toCY);
-  const p2 = getRoundedRectEdgePoint(rectTo,   toCX,   toCY,   fromCX, fromCY);
+  // 方向
+  const dx = toCX - fromCX;
+  const dy = toCY - fromCY;
 
-  // canvas座標へ
-  const x1 = (p1.x - rectCanvas.left) + canvas.scrollLeft;
-  const y1 = (p1.y - rectCanvas.top)  + canvas.scrollTop;
-  const x2 = (p2.x - rectCanvas.left) + canvas.scrollLeft;
-  const y2 = (p2.y - rectCanvas.top)  + canvas.scrollTop;
+  // ★ どの面から出すか決める
+  let startX, startY;
 
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const length = Math.hypot(dx, dy);
-  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // 横方向が強い → 左右から出す
+    if (dx > 0) {
+      // → 右側の縦中央
+      startX = rectFrom.right;
+      startY = rectFrom.top + rectFrom.height / 2;
+    } else {
+      // ← 左側の縦中央
+      startX = rectFrom.left;
+      startY = rectFrom.top + rectFrom.height / 2;
+    }
+  } else {
+    // 縦方向が強い → 上下から出す
+    if (dy > 0) {
+      // ↓ 下側の横中央
+      startX = rectFrom.left + rectFrom.width / 2;
+      startY = rectFrom.bottom;
+    } else {
+      // ↑ 上側の横中央
+      startX = rectFrom.left + rectFrom.width / 2;
+      startY = rectFrom.top;
+    }
+  }
+
+  // ★ 終点側も同じロジック
+  let endX, endY;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 0) {
+      // from → to へ右向き
+      endX = rectTo.left;
+      endY = rectTo.top + rectTo.height / 2;
+    } else {
+      endX = rectTo.right;
+      endY = rectTo.top + rectTo.height / 2;
+    }
+  } else {
+    if (dy > 0) {
+      endX = rectTo.left + rectTo.width / 2;
+      endY = rectTo.top;
+    } else {
+      endX = rectTo.left + rectTo.width / 2;
+      endY = rectTo.bottom;
+    }
+  }
+
+  // ★ canvas座標へ変換
+  const x1 = (startX - rectCanvas.left) / scale + canvas.scrollLeft;
+  const y1 = (startY - rectCanvas.top)  / scale + canvas.scrollTop;
+  const x2 = (endX   - rectCanvas.left) / scale + canvas.scrollLeft;
+  const y2 = (endY   - rectCanvas.top)  / scale + canvas.scrollTop;
+
+  // CSS矢印描画
+  const dx2 = x2 - x1;
+  const dy2 = y2 - y1;
+  const length = Math.hypot(dx2, dy2);
+  const angle = Math.atan2(dy2, dx2) * 180 / Math.PI;
 
   arrow.wrapper.style.left = `${x1}px`;
   arrow.wrapper.style.top  = `${y1}px`;
