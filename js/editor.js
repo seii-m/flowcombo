@@ -286,49 +286,46 @@ function updateArrowPosition(arrow) {
   const from = arrow.fromNode;
   const to = arrow.toNode;
 
-  // ノードの中心座標（offset ベース）
+  if (!from || !to) return;
+
   const fromX = from.offsetLeft + from.offsetWidth / 2;
   const fromY = from.offsetTop + from.offsetHeight / 2;
 
   const toX = to.offsetLeft + to.offsetWidth / 2;
   const toY = to.offsetTop + to.offsetHeight / 2;
 
-  // ベクトル
   const dx = toX - fromX;
   const dy = toY - fromY;
-  const len = Math.hypot(dx, dy) || 1;
+  const len = Math.hypot(dx, dy);
 
-  // 正規化
+  if (!len) return;
+
   const nx = dx / len;
   const ny = dy / len;
 
-  // ノードの“半径”っぽい値（外周まで押し出す）
   const fromR = Math.min(from.offsetWidth, from.offsetHeight) / 2;
   const toR = Math.min(to.offsetWidth, to.offsetHeight) / 2;
 
-  // 外周に押し出した開始・終了点
   const startX = fromX + nx * fromR;
   const startY = fromY + ny * fromR;
 
   const endX = toX - nx * toR;
   const endY = toY - ny * toR;
 
-  // SVG ライン更新
-  arrow.line.setAttribute("x1", startX);
-  arrow.line.setAttribute("y1", startY);
-  arrow.line.setAttribute("x2", endX);
-  arrow.line.setAttribute("y2", endY);
+  // ★ CSS矢印の wrapper と line を更新
+  const x = Math.min(startX, endX);
+  const y = Math.min(startY, endY);
+  const w = Math.abs(endX - startX);
+  const h = Math.abs(endY - startY);
 
-  // 矢印ヘッド更新
-  updateArrowHead(arrow, startX, startY, endX, endY);
-}
+  arrow.wrapper.style.left = `${x}px`;
+  arrow.wrapper.style.top = `${y}px`;
+  arrow.wrapper.style.width = `${w}px`;
+  arrow.wrapper.style.height = `${h}px`;
 
-function updateArrowHead(arrow, x1, y1, x2, y2) {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
   const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-  arrow.head.setAttribute("transform", `translate(${x2}, ${y2}) rotate(${angle})`);
+  arrow.line.style.transform = `rotate(${angle}deg)`;
+  arrow.line.style.width = `${len}px`;
 }
 
 function updateArrowsForNode(node) {
