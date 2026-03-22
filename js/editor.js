@@ -286,55 +286,110 @@ function updateArrowPosition(arrow) {
   const from = arrow.fromNode;
   const to = arrow.toNode;
 
-  if (!from || !to) return;
-
-  const scale = currentScale || 1;
-
   const rectCanvas = canvas.getBoundingClientRect();
   const rectFrom = from.getBoundingClientRect();
   const rectTo = to.getBoundingClientRect();
 
-  // ノード中心（画面座標）
   const fromCX = rectFrom.left + rectFrom.width / 2;
   const fromCY = rectFrom.top + rectFrom.height / 2;
   const toCX   = rectTo.left + rectTo.width / 2;
   const toCY   = rectTo.top + rectTo.height / 2;
 
-  // ベクトル
-  const dx = toCX - fromCX;
-  const dy = toCY - fromCY;
-  const len = Math.hypot(dx, dy);
-  if (!len) return;
+  // ★ 角丸矩形の外枠との交点
+  const p1 = getRoundedRectEdgePoint(rectFrom, fromCX, fromCY, toCX, toCY);
+  const p2 = getRoundedRectEdgePoint(rectTo,   toCX,   toCY,   fromCX, fromCY);
 
-  const nx = dx / len;
-  const ny = dy / len;
+  // canvas座標へ
+  const x1 = (p1.x - rectCanvas.left) + canvas.scrollLeft;
+  const y1 = (p1.y - rectCanvas.top)  + canvas.scrollTop;
+  const x2 = (p2.x - rectCanvas.left) + canvas.scrollLeft;
+  const y2 = (p2.y - rectCanvas.top)  + canvas.scrollTop;
 
-  // ★ ノード外枠まで押し出す（縦中央から）
-  //   → 角丸でもズレない「最短距離の押し出し」
-  const fromR = Math.min(rectFrom.width, rectFrom.height) / 2;
-  const toR   = Math.min(rectTo.width, rectTo.height) / 2;
-
-  const startX_screen = fromCX + nx * fromR;
-  const startY_screen = fromCY + ny * fromR;
-  const endX_screen   = toCX   - nx * toR;
-  const endY_screen   = toCY   - ny * toR;
-
-  // ★ canvas座標へ変換（scale補正）
-  const x1 = (startX_screen - rectCanvas.left) / scale + canvas.scrollLeft;
-  const y1 = (startY_screen - rectCanvas.top)  / scale + canvas.scrollTop;
-  const x2 = (endX_screen   - rectCanvas.left) / scale + canvas.scrollLeft;
-  const y2 = (endY_screen   - rectCanvas.top)  / scale + canvas.scrollTop;
-
-  // CSS矢印描画
-  const dx2 = x2 - x1;
-  const dy2 = y2 - y1;
-  const length = Math.hypot(dx2, dy2);
-  const angle = Math.atan2(dy2, dx2) * 180 / Math.PI;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const length = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
   arrow.wrapper.style.left = `${x1}px`;
   arrow.wrapper.style.top  = `${y1}px`;
   arrow.line.style.width   = `${length}px`;
   arrow.line.style.transform = `rotate(${angle}deg)`;
+}
+
+function getRoundedRectEdgePoint(rect, cx, cy, tx, ty, radius = 12) {
+  // rect: getBoundingClientRect()
+  // (cx, cy): ノード中心
+  // (tx, ty): 目標ノード中心
+
+  const dx = tx - cx;
+  const dy = ty - cy;
+  const len = Math.hypot(dx, dy);
+  const nx = dx / len;
+  const ny = dy / len;
+
+  // 角丸矩形の半サイズ
+  const hw = rect.width / 2;
+  const hh = rect.height / 2;
+
+  // 角丸部分を除いた矩形の半サイズ
+  const innerW = hw - radius;
+  const innerH = hh - radius;
+
+  // まず角丸を無視した矩形との交点を求める
+  let t = Infinity;
+
+  // 左右
+  if (nx !== 0) {
+    const tx1 = (-innerW) / nx;
+    const tx2 = ( innerW) / nx;
+    t = Math.min(
+      tx1 > 0 ? tx1 : Infinity,
+      tx2 > 0 ? tx2 : Infinity,
+      t
+    );
+  }
+
+  // 上下
+  if (ny !== 0) {
+    const ty1 = (-innerH) / ny;
+    const ty2 = ( innerH) / ny;
+    t = Math.min(
+      ty1 > 0 ? ty1 : Infinity,
+      ty2 > 0 ? ty2 : Infinity,
+      t
+    );
+  }
+
+  // 角丸領域に入る場合は円弧との交点を計算
+  const px = cx + nx * t;
+  const py = cy + ny * t;
+
+  // 角丸領域判定
+  const dx2 = Math.abs(px - rect.left - hw);
+  const dy2 = Math.abs(py - rect.top - hh);
+
+  if (dx2 > innerW && dy2 > innerH) {
+    // 角丸円弧との交点
+    const signX = Math.sign(nx);
+    const signY = Math.sign(ny);
+    const cx2 = rect.left + hw + signX * innerW;
+    const cy2 = rect.top + hh + signY * innerH;
+
+    // 円との交点
+    const ex = cx2 - cx;
+    const ey = cy2 - cy;
+    const b = ex * nx + ey * ny;
+    const c = ex * ex + ey * ey - radius * radius;
+    const disc = b * b - c;
+    const t2 = b - Math.sqrt(disc);
+
+    return {
+      x: cx + nx * t2,
+      y: cy + ny * t2
+    };
+  }
+
+  return { x: px, y: py };
 }
 
 function updateArrowsForNode(node) {
