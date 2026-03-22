@@ -517,11 +517,12 @@ canvas.addEventListener("pointerdown", e => {
 });
 
 /* ─────────────────────────────
-   JSON 保存 / 読込
+   JSON 保存（ファイル or テキスト）
 ────────────────────────────── */
-        
+
 exportBtn.addEventListener("click", () => {
-  if (!confirm("フローを保存しますか？")) return;
+  const saveAsFile = confirm("ファイルとして保存しますか？\nキャンセルするとテキスト欄に出力します");
+
   const data = {
     version: 1,
     title: titleInput.value || "無題のフロー",
@@ -540,26 +541,59 @@ exportBtn.addEventListener("click", () => {
 
   const json = JSON.stringify(data, null, 2);
 
-  // クリップボードコピー（従来機能）
-  navigator.clipboard?.writeText(json).catch(() => {});
-  importArea.value = json;
+  if (saveAsFile) {
+    // ★ ファイル保存（スマホ対応）
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
 
-  // ★ ファイル保存（スマホ対応）
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = (titleInput.value || "flowcombo") + ".json";
+    a.click();
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = (titleInput.value || "flowcombo") + ".json";
-  a.click();
+    URL.revokeObjectURL(url);
+  } else {
+    // ★ テキスト欄へ出力（従来機能）
+    importArea.value = json;
 
-  URL.revokeObjectURL(url);
+    // クリップボードコピー（可能なら）
+    navigator.clipboard?.writeText(json).catch(() => {});
+  }
 });
+
+/* ─────────────────────────────
+   JSON 読込（ファイル or テキスト）
+────────────────────────────── */
 
 importBtn.addEventListener("click", () => {
-  document.getElementById("file-input").click();
+  // ★ 保存と同じ confirm を使う
+  const useFile = confirm("ファイルから読み込みますか？\nキャンセルするとテキスト欄から読み込みます");
+
+  if (useFile) {
+    // ファイル読込
+    document.getElementById("file-input").click();
+  } else {
+    // テキスト欄読込
+    loadFromTextArea();
+  }
 });
 
+// ★ テキスト欄から読み込む処理
+function loadFromTextArea() {
+  const text = importArea.value.trim();
+  if (!text) {
+    alert("テキスト欄が空です");
+    return;
+  }
+  try {
+    const data = JSON.parse(text);
+    loadFromData(data);
+  } catch {
+    alert("JSON の形式が不正です");
+  }
+}
+
+// ★ ファイル読込（既存コードそのまま）
 document.getElementById("file-input").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
