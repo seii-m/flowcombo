@@ -294,35 +294,36 @@ function updateArrowPosition(arrow) {
   const rectFrom = from.getBoundingClientRect();
   const rectTo = to.getBoundingClientRect();
 
-  // ノード中心座標（画面座標）
-  const fromCenterX = rectFrom.left + rectFrom.width / 2;
-  const fromCenterY = rectFrom.top + rectFrom.height / 2;
-  const toCenterX = rectTo.left + rectTo.width / 2;
-  const toCenterY = rectTo.top + rectTo.height / 2;
+  // ノード中心（画面座標）
+  const fromCX = rectFrom.left + rectFrom.width / 2;
+  const fromCY = rectFrom.top + rectFrom.height / 2;
+  const toCX   = rectTo.left + rectTo.width / 2;
+  const toCY   = rectTo.top + rectTo.height / 2;
 
   // ベクトル
-  const dx = toCenterX - fromCenterX;
-  const dy = toCenterY - fromCenterY;
+  const dx = toCX - fromCX;
+  const dy = toCY - fromCY;
   const len = Math.hypot(dx, dy);
   if (!len) return;
 
   const nx = dx / len;
   const ny = dy / len;
 
-  // 外枠まで押し出す（縦中央から）
+  // ★ ノード外枠まで押し出す（縦中央から）
+  //   → 角丸でもズレない「最短距離の押し出し」
   const fromR = Math.min(rectFrom.width, rectFrom.height) / 2;
-  const toR = Math.min(rectTo.width, rectTo.height) / 2;
+  const toR   = Math.min(rectTo.width, rectTo.height) / 2;
 
-  const startX = fromCenterX + nx * fromR;
-  const startY = fromCenterY + ny * fromR;
-  const endX = toCenterX - nx * toR;
-  const endY = toCenterY - ny * toR;
+  const startX_screen = fromCX + nx * fromR;
+  const startY_screen = fromCY + ny * fromR;
+  const endX_screen   = toCX   - nx * toR;
+  const endY_screen   = toCY   - ny * toR;
 
-  // canvas座標に変換（scale補正あり）
-  const x1 = (startX - rectCanvas.left) / scale + canvas.scrollLeft;
-  const y1 = (startY - rectCanvas.top) / scale + canvas.scrollTop;
-  const x2 = (endX - rectCanvas.left) / scale + canvas.scrollLeft;
-  const y2 = (endY - rectCanvas.top) / scale + canvas.scrollTop;
+  // ★ canvas座標へ変換（scale補正）
+  const x1 = (startX_screen - rectCanvas.left) / scale + canvas.scrollLeft;
+  const y1 = (startY_screen - rectCanvas.top)  / scale + canvas.scrollTop;
+  const x2 = (endX_screen   - rectCanvas.left) / scale + canvas.scrollLeft;
+  const y2 = (endY_screen   - rectCanvas.top)  / scale + canvas.scrollTop;
 
   // CSS矢印描画
   const dx2 = x2 - x1;
@@ -331,8 +332,8 @@ function updateArrowPosition(arrow) {
   const angle = Math.atan2(dy2, dx2) * 180 / Math.PI;
 
   arrow.wrapper.style.left = `${x1}px`;
-  arrow.wrapper.style.top = `${y1}px`;
-  arrow.line.style.width = `${length}px`;
+  arrow.wrapper.style.top  = `${y1}px`;
+  arrow.line.style.width   = `${length}px`;
   arrow.line.style.transform = `rotate(${angle}deg)`;
 }
 
