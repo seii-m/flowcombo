@@ -541,6 +541,9 @@ exportBtn.addEventListener("click", () => {
 
   const json = JSON.stringify(data, null, 2);
 
+  // クリップボードコピー（可能なら）
+  navigator.clipboard?.writeText(json).catch(() => {});
+  
   if (saveAsFile) {
     // ★ ファイル保存（スマホ対応）
     const blob = new Blob([json], { type: "application/json" });
@@ -555,9 +558,6 @@ exportBtn.addEventListener("click", () => {
   } else {
     // ★ テキスト欄へ出力（従来機能）
     importArea.value = json;
-
-    // クリップボードコピー（可能なら）
-    navigator.clipboard?.writeText(json).catch(() => {});
   }
 });
 
