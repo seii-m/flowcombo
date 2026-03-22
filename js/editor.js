@@ -288,12 +288,17 @@ function updateArrowPosition(arrow) {
 
   if (!from || !to) return;
 
-  // ノードの中心（縦中央・横中央）
-  const fromCenterX = from.offsetLeft + from.offsetWidth / 2;
-  const fromCenterY = from.offsetTop + from.offsetHeight / 2;
+  const scale = currentScale || 1;
 
-  const toCenterX = to.offsetLeft + to.offsetWidth / 2;
-  const toCenterY = to.offsetTop + to.offsetHeight / 2;
+  const rectCanvas = canvas.getBoundingClientRect();
+  const rectFrom = from.getBoundingClientRect();
+  const rectTo = to.getBoundingClientRect();
+
+  // ノード中心座標（画面座標）
+  const fromCenterX = rectFrom.left + rectFrom.width / 2;
+  const fromCenterY = rectFrom.top + rectFrom.height / 2;
+  const toCenterX = rectTo.left + rectTo.width / 2;
+  const toCenterY = rectTo.top + rectTo.height / 2;
 
   // ベクトル
   const dx = toCenterX - fromCenterX;
@@ -301,35 +306,34 @@ function updateArrowPosition(arrow) {
   const len = Math.hypot(dx, dy);
   if (!len) return;
 
-  // 正規化
   const nx = dx / len;
   const ny = dy / len;
 
-  // ノード外枠まで押し出す（縦中央から外へ）
-  const fromR = Math.min(from.offsetWidth, from.offsetHeight) / 2;
-  const toR = Math.min(to.offsetWidth, to.offsetHeight) / 2;
+  // 外枠まで押し出す（縦中央から）
+  const fromR = Math.min(rectFrom.width, rectFrom.height) / 2;
+  const toR = Math.min(rectTo.width, rectTo.height) / 2;
 
   const startX = fromCenterX + nx * fromR;
   const startY = fromCenterY + ny * fromR;
-
   const endX = toCenterX - nx * toR;
   const endY = toCenterY - ny * toR;
 
-  // wrapper の位置とサイズ
-  const x = Math.min(startX, endX);
-  const y = Math.min(startY, endY);
-  const w = Math.abs(endX - startX);
-  const h = Math.abs(endY - startY);
+  // canvas座標に変換（scale補正あり）
+  const x1 = (startX - rectCanvas.left) / scale + canvas.scrollLeft;
+  const y1 = (startY - rectCanvas.top) / scale + canvas.scrollTop;
+  const x2 = (endX - rectCanvas.left) / scale + canvas.scrollLeft;
+  const y2 = (endY - rectCanvas.top) / scale + canvas.scrollTop;
 
-  arrow.wrapper.style.left = `${x}px`;
-  arrow.wrapper.style.top = `${y}px`;
-  arrow.wrapper.style.width = `${w}px`;
-  arrow.wrapper.style.height = `${h}px`;
+  // CSS矢印描画
+  const dx2 = x2 - x1;
+  const dy2 = y2 - y1;
+  const length = Math.hypot(dx2, dy2);
+  const angle = Math.atan2(dy2, dx2) * 180 / Math.PI;
 
-  // line の角度と長さ
-  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  arrow.wrapper.style.left = `${x1}px`;
+  arrow.wrapper.style.top = `${y1}px`;
+  arrow.line.style.width = `${length}px`;
   arrow.line.style.transform = `rotate(${angle}deg)`;
-  arrow.line.style.width = `${len}px`;
 }
 
 function updateArrowsForNode(node) {
