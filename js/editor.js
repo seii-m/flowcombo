@@ -283,33 +283,52 @@ function createArrow(fromNode, toNode) {
 let currentScale = 1; // ★ 追加
 
 function updateArrowPosition(arrow) {
-  const rectCanvas = canvas.getBoundingClientRect();
-  const rectFrom = arrow.fromNode.getBoundingClientRect();
-  const rectTo = arrow.toNode.getBoundingClientRect();
+  const from = arrow.fromNode;
+  const to = arrow.toNode;
 
-  const scale = currentScale || 1; // ← zoom 値
+  // ノードの中心座標（offset ベース）
+  const fromX = from.offsetLeft + from.offsetWidth / 2;
+  const fromY = from.offsetTop + from.offsetHeight / 2;
 
-  // ノード外周の交点を取得
-  const p1 = getRectEdgePoint(rectFrom, rectTo.left, rectTo.top);
-  const p2 = getRectEdgePoint(rectTo, rectFrom.left, rectFrom.top);
+  const toX = to.offsetLeft + to.offsetWidth / 2;
+  const toY = to.offsetTop + to.offsetHeight / 2;
 
-  // キャンバス座標へ（scale 補正）
-  const x1 = (p1.x - rectCanvas.left) / scale + canvas.scrollLeft;
-  const y1 = (p1.y - rectCanvas.top) / scale + canvas.scrollTop;
-  const x2 = (p2.x - rectCanvas.left) / scale + canvas.scrollLeft;
-  const y2 = (p2.y - rectCanvas.top) / scale + canvas.scrollTop;
+  // ベクトル
+  const dx = toX - fromX;
+  const dy = toY - fromY;
+  const len = Math.hypot(dx, dy) || 1;
 
-  // CSS 矢印描画
+  // 正規化
+  const nx = dx / len;
+  const ny = dy / len;
+
+  // ノードの“半径”っぽい値（外周まで押し出す）
+  const fromR = Math.min(from.offsetWidth, from.offsetHeight) / 2;
+  const toR = Math.min(to.offsetWidth, to.offsetHeight) / 2;
+
+  // 外周に押し出した開始・終了点
+  const startX = fromX + nx * fromR;
+  const startY = fromY + ny * fromR;
+
+  const endX = toX - nx * toR;
+  const endY = toY - ny * toR;
+
+  // SVG ライン更新
+  arrow.line.setAttribute("x1", startX);
+  arrow.line.setAttribute("y1", startY);
+  arrow.line.setAttribute("x2", endX);
+  arrow.line.setAttribute("y2", endY);
+
+  // 矢印ヘッド更新
+  updateArrowHead(arrow, startX, startY, endX, endY);
+}
+
+function updateArrowHead(arrow, x1, y1, x2, y2) {
   const dx = x2 - x1;
   const dy = y2 - y1;
-  const length = Math.hypot(dx, dy);
   const angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
-  arrow.wrapper.style.left = `${x1}px`;
-  arrow.wrapper.style.top = `${y1}px`;
-
-  arrow.line.style.width = `${length}px`;
-  arrow.line.style.transform = `rotate(${angle}deg)`;
+  arrow.head.setAttribute("transform", `translate(${x2}, ${y2}) rotate(${angle})`);
 }
 
 function updateArrowsForNode(node) {
@@ -501,7 +520,7 @@ function findRoots(children) {
 }
 
 /* ─────────────────────────────
-   ツリー自動整列
+   ツリー自動整列（横幅対応 完全版）
 ────────────────────────────── */
 
 document.getElementById("align-btn").addEventListener("click", autoAlignTree);
@@ -510,6 +529,7 @@ function autoAlignTree() {
   const children = buildTree();
   const depth = computeDepths(children);
 
+  // depth ごとにノードを集める
   const columns = new Map();
   nodes.forEach(n => {
     const d = depth.get(n) || 0;
@@ -517,8 +537,37 @@ function autoAlignTree() {
     columns.get(d).push(n);
   });
 
-  const colWidth = 160;
-  const marginY = 20; // ノード間の余白
+  /* ─────────────────────────────
+     ① depth ごとの最大ノード幅を計算
+  ────────────────────────────── */
+  const colMaxWidth = new Map();
+  columns.forEach((list, d) => {
+    let maxW = 0;
+    list.forEach(node => {
+      const w = node.getBoundingClientRect().width;
+      if (w > maxW) maxW = w;
+    });
+    colMaxWidth.set(d, maxW);
+  });
+
+  /* ─────────────────────────────
+     ② depth ごとの X 座標を計算
+        （最大幅の累積 + 余白）
+  ────────────────────────────── */
+  const colX = new Map();
+  let acc = 40; // 左端
+  const colGap = 60; // 列間余白
+
+  const maxDepth = Math.max(...columns.keys());
+  for (let d = 0; d <= maxDepth; d++) {
+    colX.set(d, acc);
+    acc += (colMaxWidth.get(d) || 0) + colGap;
+  }
+
+  /* ─────────────────────────────
+     ③ 各列を兄弟グループ単位で縦整列
+  ────────────────────────────── */
+  const marginY = 20;
 
   columns.forEach((list, d) => {
 
@@ -555,9 +604,9 @@ function autoAlignTree() {
 
     // ★ グループごとに配置（高さ考慮）
     let currentY = 40;
+    const x = colX.get(d);
 
     groups.forEach(group => {
-      const x = 40 + d * colWidth;
 
       // 親より上に行かない補正
       const parent = findParents(group[0])[0];
@@ -566,14 +615,15 @@ function autoAlignTree() {
         if (currentY < parentY) currentY = parentY;
       }
 
-      // グループ内のノードを配置（高さ考慮）
+      // グループ内のノードを配置
       group.forEach(node => {
         node.style.left = `${x}px`;
         node.style.top = `${currentY}px`;
+
         updateArrowsForNode(node);
 
         const h = node.getBoundingClientRect().height;
-        currentY += h + marginY; // ★ 高さ + 余白
+        currentY += h + marginY;
       });
     });
   });
