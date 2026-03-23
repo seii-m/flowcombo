@@ -265,4 +265,5 @@ html, body {
   border: 1px solid #b0bec5;
   background: rgba(255,255,255,0.9);
   resize: none;
+  margin-bottom: 40px;
 }
