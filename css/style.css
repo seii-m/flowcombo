@@ -136,6 +136,7 @@ html, body {
   line-height: 60px;
   font-size: 14px;
   z-index: 9;
+  overflow: hidden;
 }
 
 /* ─────────────────────────────
