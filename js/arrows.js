@@ -148,6 +148,12 @@ function updateArrowPosition(arrow) {
   arrow.wrapper.style.top  = `${y1}px`;
   arrow.line.style.width   = `${length}px`;
   arrow.line.style.transform = `rotate(${angle}deg)`;
+
+  // ★ PDF 用に座標を保存
+  arrow.x1 = x1;
+  arrow.y1 = y1;
+  arrow.x2 = x2;
+  arrow.y2 = y2;
 }
 
 /* ─────────────────────────────
