@@ -1,86 +1,65 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
   <title>FlowCombo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3996938703010668"
-     crossorigin="anonymous"></script>  
-  
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="icon" href="favicon.ico">
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
 
-  <!-- ★ manifest は head の中に置く -->
-  <link rel="manifest" href="manifest.json">
-
-  <!-- ★ service worker はルートに置くのが正解 -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js");
-    }
-  </script>
+  <!-- html2canvas（画像保存用） -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 
 <body>
-  <!-- ツールバー -->
+
+  <!-- ──────────────── ツールバー ──────────────── -->
   <div id="toolbar">
-    <input id="flow-title" placeholder="タイトルを入力" />
+    <input id="flow-title" type="text" value="無題のフロー">
 
     <div class="toolbar-group">
-      <button class="btn node-btn" data-node-type="start">始動</button>
-      <button class="btn node-btn" data-node-type="action">行動</button>
-      <button class="btn node-btn" data-node-type="check">確認</button>
+      <button class="node-btn btn" data-node-type="start">始動</button>
+      <button class="node-btn btn" data-node-type="action">行動</button>
+      <button class="node-btn btn" data-node-type="check">確認</button>
     </div>
 
     <div class="toolbar-group">
-      <!-- <button class="btn mode-btn" data-mode="view">閲覧</button> -->
-      <button class="btn mode-btn" data-mode="edit">編集</button>
-      <button class="btn mode-btn" data-mode="move">移動</button>
-      <button class="btn mode-btn" data-mode="link">矢印</button>
-      <button class="btn mode-btn danger" data-mode="delete">削除</button>
+      <button class="mode-btn btn" data-mode="view">閲覧</button>
+      <button class="mode-btn btn" data-mode="edit">編集</button>
+      <button class="mode-btn btn" data-mode="move">移動</button>
+      <button class="mode-btn btn" data-mode="link">矢印</button>
+      <button class="mode-btn btn danger" data-mode="delete">削除</button>
     </div>
 
     <div class="toolbar-group">
-      <input type="file" id="file-input" accept="application/json" style="display:none;">
-      <button class="btn io-btn" id="align-btn">整列</button>
-      <button class="btn io-btn" id="import-btn">読込</button>
-      <button class="btn io-btn" id="export-btn">保存</button>
-      <button class="btn io-btn" id="save-image-btn">画像</button>
+      <button id="align-btn" class="btn io-btn">整列</button>
+      <button id="save-image-btn" class="btn io-btn">画像保存</button>
+      <button id="export-btn" class="btn io-btn">保存</button>
+      <button id="import-btn" class="btn io-btn">読込</button>
     </div>
   </div>
 
+  <!-- ──────────────── キャンバス ──────────────── -->
   <div id="canvas"></div>
 
-  <!-- JSON 読込エリア（コピー付き） -->
-  <div id="import-wrapper">
-    <textarea id="import-area" placeholder="ここに JSON を貼り付けて読込ボタン"></textarea>
-    <button id="copy-json-btn" type="button">コピー</button>
-  </div>
-  
-  <script>
-    document.getElementById("copy-json-btn").addEventListener("click", () => {
-      const ta = document.getElementById("import-area");
-      ta.select();
-      document.execCommand("copy");
-    });
-  </script>
-  
-  <!-- 広告エリア -->
-  <div id="ad-area">
-    <!-- flowcombo_bottom_ad -->
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-3996938703010668"
-         data-ad-slot="9604165145"
-         data-ad-format="horizontal"
-         data-full-width-responsive="true"></ins>
-    <script>
-         (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </div>
+  <!-- ──────────────── JSON 読込欄 ──────────────── -->
+  <textarea id="import-area"></textarea>
+  <button id="copy-json-btn">コピー</button>
+  <input id="file-input" type="file" accept="application/json" style="display:none">
 
-  <script src="js/editor.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- ──────────────── 広告欄 ──────────────── -->
+  <div id="ad-area">広告</div>
+
+  <!-- ──────────────── JS（分割後） ──────────────── -->
+  <script src="js/core.js"></script>
+  <script src="js/mode.js"></script>
+  <script src="js/nodes.js"></script>
+  <script src="js/arrows.js"></script>
+  <script src="js/io.js"></script>
+  <script src="js/export-image.js"></script>
+
 </body>
 </html>
