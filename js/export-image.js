@@ -127,15 +127,15 @@ function saveAsPNG() {
 }
 
 /* =========================================================
-   PDF 保存（軽量化のみ）
+   PDF 保存（軽量化のみ・PNGのまま）
 ========================================================= */
 
 function saveAsPDF() {
   renderFlowAsCanvas().then(finalCanvas => {
     const title = titleInput.value || "FlowCombo";
 
-    // ★ PNG → JPEG（軽量化）
-    const imgData = finalCanvas.toDataURL("image/jpeg", 0.85);
+    // ★ PNG のまま（JPEG にしない）
+    const imgData = finalCanvas.toDataURL("image/png");
 
     // A4 横向き（landscape）
     const pdf = new jspdf.jsPDF({
@@ -157,7 +157,7 @@ function saveAsPDF() {
     const x = margin;
     const y = (pageHeight - imgHeight) / 2;
 
-    pdf.addImage(imgData, "JPEG", x, y, availableWidth, imgHeight);
+    pdf.addImage(imgData, "PNG", x, y, availableWidth, imgHeight);
     pdf.save(title + ".pdf");
   });
 }
