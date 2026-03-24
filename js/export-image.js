@@ -131,17 +131,11 @@ function saveAsPNG() {
 ========================================================= */
 
 function saveAsPDF() {
-  const target = document.getElementById("canvas");
-
-  html2canvas(target, {
-    backgroundColor: null,
-    scale: 1   // ★ 軽量化：2 → 1 に変更
-  }).then(canvas => {
-
+  renderFlowAsCanvas().then(finalCanvas => {
     const title = titleInput.value || "FlowCombo";
 
-    // ★ PNG → JPEG（軽量化の核心）
-    const imgData = canvas.toDataURL("image/jpeg", 0.85);
+    // ★ PNG → JPEG（軽量化）
+    const imgData = finalCanvas.toDataURL("image/jpeg", 0.85);
 
     // A4 横向き（landscape）
     const pdf = new jspdf.jsPDF({
@@ -150,13 +144,14 @@ function saveAsPDF() {
       format: "a4"
     });
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageWidth = pdf.internal.pageSize.getWidth();   // 297mm
+    const pageHeight = pdf.internal.pageSize.getHeight(); // 210mm
 
     const margin = 10;
-    const availableWidth = pageWidth - margin * 2;
 
-    const ratio = canvas.height / canvas.width;
+    // キャンバスのアスペクト比を維持して横向き A4 にフィット
+    const availableWidth = pageWidth - margin * 2;
+    const ratio = finalCanvas.height / finalCanvas.width;
     const imgHeight = availableWidth * ratio;
 
     const x = margin;
