@@ -127,14 +127,14 @@ function saveAsPNG() {
 }
 
 /* =========================================================
-   PDF 保存（軽量化のみ・PNGのまま）
+   PDF 保存
 ========================================================= */
 
 function saveAsPDF() {
   renderFlowAsCanvas().then(finalCanvas => {
     const title = titleInput.value || "FlowCombo";
 
-    // ★ PNG のまま（JPEG にしない）
+    // ★ PNG
     const imgData = finalCanvas.toDataURL("image/png");
 
     // A4 横向き（landscape）
