@@ -35,17 +35,8 @@ function renderFlowAsCanvas(useWhiteBackground) {
     backgroundColor: null,
     scale: 2
   }).then(canvas => {
-    if (useWhiteBackground) {
-      const ctx = canvas.getContext("2d");
-      const white = document.createElement("canvas");
-      white.width = canvas.width;
-      white.height = canvas.height;
-      const wctx = white.getContext("2d");
-      wctx.fillStyle = "#ffffff";
-      wctx.fillRect(0, 0, white.width, white.height);
-      wctx.drawImage(canvas, 0, 0);
-      canvas = white;
-    }
+
+    /* ① まず透明のままトリミング処理を行う（あなたの元コードそのまま） */
     const ctx = canvas.getContext("2d");
     const w = canvas.width;
     const h = canvas.height;
@@ -53,7 +44,6 @@ function renderFlowAsCanvas(useWhiteBackground) {
 
     let minX = w, minY = h, maxX = 0, maxY = 0;
 
-    // 透明以外のピクセル領域を検出
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const idx = (y * w + x) * 4;
@@ -67,7 +57,6 @@ function renderFlowAsCanvas(useWhiteBackground) {
       }
     }
 
-    // 余白 20px を追加してトリミング
     const pad = 20;
     const trimW = (maxX - minX + 1) + pad * 2;
     const trimH = (maxY - minY + 1) + pad * 2;
@@ -89,7 +78,7 @@ function renderFlowAsCanvas(useWhiteBackground) {
       trimH
     );
 
-    // タイトル帯
+    /* ② タイトル帯を合成（あなたの元コードそのまま） */
     const title = titleInput.value || "FlowCombo";
     const fontSize = 32;
     const titlePad = 20;
@@ -100,13 +89,11 @@ function renderFlowAsCanvas(useWhiteBackground) {
     finalCanvas.height = trimmed.height + titleHeight;
 
     const fctx = finalCanvas.getContext("2d");
-    fctx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
 
     // タイトル帯（白背景）
     fctx.fillStyle = "rgba(255,255,255,1)";
     fctx.fillRect(0, 0, finalCanvas.width, titleHeight);
 
-    // タイトル文字（黒字＋白縁）
     fctx.font = `${fontSize}px sans-serif`;
     fctx.textAlign = "left";
     fctx.textBaseline = "top";
@@ -120,6 +107,20 @@ function renderFlowAsCanvas(useWhiteBackground) {
 
     // 本体画像
     fctx.drawImage(trimmed, 0, titleHeight);
+
+    /* ③ 最後に白背景を塗る（必要な場合のみ） */
+    if (useWhiteBackground) {
+      const white = document.createElement("canvas");
+      white.width = finalCanvas.width;
+      white.height = finalCanvas.height;
+
+      const wctx = white.getContext("2d");
+      wctx.fillStyle = "#ffffff";
+      wctx.fillRect(0, 0, white.width, white.height);
+      wctx.drawImage(finalCanvas, 0, 0);
+
+      return white;
+    }
 
     return finalCanvas;
   });
