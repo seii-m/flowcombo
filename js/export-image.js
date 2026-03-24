@@ -4,7 +4,7 @@
 ========================================================= */
 
 document.getElementById("save-image-btn").addEventListener("click", () => {
-  showDialog("保存形式を選択してください", [
+  showDialog("画像として保存しますか？", [
     {
       label: "PNG で保存",
       onClick: () => saveAsPNG()
@@ -21,7 +21,7 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
 });
 
 /* =========================================================
-   共通：キャンバスを PNG 化して返す（PNG 用）
+   共通：キャンバスを PNG 化して返す
 ========================================================= */
 
 function renderFlowAsCanvas() {
@@ -127,60 +127,37 @@ function saveAsPNG() {
 }
 
 /* =========================================================
-   PDF 保存（PNG → PDF の軽量版）
+   PDF 保存（jsPDF）
 ========================================================= */
 
 function saveAsPDF() {
-  const target = document.getElementById("canvas");
-
-  // ガイドテキストがあるなら一時的に非表示
-  const guide = document.getElementById("fc-guide");
-  const guideWasVisible = guide && guide.style.display !== "none";
-  if (guide) guide.style.display = "none";
-
-  html2canvas(target, {
-    backgroundColor: null,
-    scale: 1   // ★ 軽量化：2 → 1
-  }).then(canvas => {
-
-    // ガイドを元に戻す
-    if (guide && guideWasVisible) guide.style.display = "block";
-
+  renderFlowAsCanvas().then(finalCanvas => {
     const title = titleInput.value || "FlowCombo";
 
-    // JPEG に変換（PNG より軽い）
-    const imgData = canvas.toDataURL("image/jpeg", 0.85);
+    const imgData = finalCanvas.toDataURL("image/png");
 
-    // A4 横向き PDF（px）
+    // A4 横向き（landscape）
     const pdf = new jspdf.jsPDF({
       orientation: "landscape",
-      unit: "px",
+      unit: "mm",
       format: "a4"
     });
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageWidth = pdf.internal.pageSize.getWidth();   // 297mm
+    const pageHeight = pdf.internal.pageSize.getHeight(); // 210mm
 
-    const margin = 40;
+    // 余白 10mm
+    const margin = 10;
+
+    // キャンバスのアスペクト比を維持して横向き A4 にフィット
     const availableWidth = pageWidth - margin * 2;
-
-    const ratio = canvas.height / canvas.width;
+    const ratio = finalCanvas.height / finalCanvas.width;
     const imgHeight = availableWidth * ratio;
 
     const x = margin;
-    const y = (pageHeight - imgHeight) / 2;
+    const y = (pageHeight - imgHeight) / 2; // 縦方向は中央寄せ
 
-    // タイトル帯
-    pdf.setFillColor(255, 255, 255);
-    pdf.rect(0, 0, pageWidth, 60, "F");
-
-    pdf.setFontSize(28);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text(title, margin, 40);
-
-    // 画像貼り付け
-    pdf.addImage(imgData, "JPEG", x, y + 20, availableWidth, imgHeight);
-
+    pdf.addImage(imgData, "PNG", x, y, availableWidth, imgHeight);
     pdf.save(title + ".pdf");
   });
 }
