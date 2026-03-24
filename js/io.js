@@ -4,13 +4,57 @@
 ========================================================= */
 
 /* ─────────────────────────────
-   JSON 保存（ファイル or テキスト）
+   保存ボタン（JSONファイル or テキスト欄）
 ────────────────────────────── */
 
 exportBtn.addEventListener("click", () => {
-  const saveAsFile = confirm("ファイルとして保存しますか？\nキャンセルするとテキスト欄に出力します");
+  showDialog("フローを出力しますか？", [
+    {
+      label: "JSON ファイルとして保存",
+      onClick: () => saveAsJSONFile()
+    },
+    {
+      label: "テキスト欄へ出力",
+      onClick: () => saveToTextArea()
+    },
+    {
+      label: "キャンセル",
+      onClick: () => {}
+    }
+  ]);
+});
 
-  const data = {
+/* JSON ファイルとして保存 */
+function saveAsJSONFile() {
+  const data = collectFlowData();
+  const json = JSON.stringify(data, null, 2);
+
+  // クリップボードコピー（可能なら）
+  navigator.clipboard?.writeText(json).catch(() => {});
+
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = (titleInput.value || "flowcombo") + ".json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+/* テキスト欄へ出力 */
+function saveToTextArea() {
+  const data = collectFlowData();
+  importArea.value = JSON.stringify(data, null, 2);
+
+  // クリップボードコピー（可能なら）
+  navigator.clipboard?.writeText(importArea.value).catch(() => {});
+}
+
+/* FlowCombo のデータをまとめる共通関数 */
+function collectFlowData() {
+  return {
     version: 1,
     title: titleInput.value || "無題のフロー",
     nodes: nodes.map(n => ({
@@ -25,41 +69,27 @@ exportBtn.addEventListener("click", () => {
       to: a.toNode.dataset.id
     }))
   };
-
-  const json = JSON.stringify(data, null, 2);
-
-  // クリップボードコピー（可能なら）
-  navigator.clipboard?.writeText(json).catch(() => {});
-
-  if (saveAsFile) {
-    // ファイル保存（スマホ対応）
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = (titleInput.value || "flowcombo") + ".json";
-    a.click();
-
-    URL.revokeObjectURL(url);
-  } else {
-    // テキスト欄へ出力
-    importArea.value = json;
-  }
-});
+}
 
 /* ─────────────────────────────
-   JSON 読込（ファイル or テキスト）
+   読込ボタン（JSONファイル or テキスト欄）
 ────────────────────────────── */
 
 importBtn.addEventListener("click", () => {
-  const useFile = confirm("ファイルから読み込みますか？\nキャンセルするとテキスト欄から読み込みます");
-
-  if (useFile) {
-    document.getElementById("file-input").click();
-  } else {
-    loadFromTextArea();
-  }
+  showDialog("どこから読み込みますか？", [
+    {
+      label: "JSON ファイルを読み込む",
+      onClick: () => document.getElementById("file-input").click()
+    },
+    {
+      label: "テキスト欄から読み込む",
+      onClick: () => loadFromTextArea()
+    },
+    {
+      label: "キャンセル",
+      onClick: () => {}
+    }
+  ]);
 });
 
 /* テキスト欄から読み込む */
@@ -149,22 +179,7 @@ function loadFromData(data) {
 ────────────────────────────── */
 
 function saveData() {
-  const data = {
-    version: 1,
-    title: titleInput.value || "無題のフロー",
-    nodes: nodes.map(n => ({
-      id: n.dataset.id,
-      type: n.dataset.type,
-      text: n.innerHTML,
-      left: n.style.left,
-      top: n.style.top
-    })),
-    arrows: arrows.map(a => ({
-      from: a.fromNode.dataset.id,
-      to: a.toNode.dataset.id
-    }))
-  };
-
+  const data = collectFlowData();
   localStorage.setItem("flowcombo-data", JSON.stringify(data));
 }
 
