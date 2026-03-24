@@ -11,7 +11,7 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
     },
     {
       label: "PDF で保存",
-      onClick: () => saveAsPDF()   // 後で実装
+      onClick: () => saveAsPDF()
     },
     {
       label: "キャンセル",
@@ -21,17 +21,16 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
 });
 
 /* =========================================================
-   PNG 保存（元の処理を関数化）
+   共通：キャンバスを PNG 化して返す
 ========================================================= */
 
-function saveAsPNG() {
+function renderFlowAsCanvas() {
   const target = document.getElementById("canvas");
 
-  html2canvas(target, {
+  return html2canvas(target, {
     backgroundColor: null,
     scale: 2
   }).then(canvas => {
-
     const ctx = canvas.getContext("2d");
     const w = canvas.width;
     const h = canvas.height;
@@ -107,8 +106,19 @@ function saveAsPNG() {
     // 本体画像
     fctx.drawImage(trimmed, 0, titleHeight);
 
-    // PNG 保存
+    return finalCanvas;
+  });
+}
+
+/* =========================================================
+   PNG 保存
+========================================================= */
+
+function saveAsPNG() {
+  renderFlowAsCanvas().then(finalCanvas => {
+    const title = titleInput.value || "FlowCombo";
     const url = finalCanvas.toDataURL("image/png");
+
     const a = document.createElement("a");
     a.href = url;
     a.download = title + ".png";
@@ -117,9 +127,35 @@ function saveAsPNG() {
 }
 
 /* =========================================================
-   PDF 保存（後で実装）
+   PDF 保存（jsPDF）
 ========================================================= */
 
 function saveAsPDF() {
-  alert("PDF 保存はまだ実装していません");
+  renderFlowAsCanvas().then(finalCanvas => {
+    const title = titleInput.value || "FlowCombo";
+
+    const imgData = finalCanvas.toDataURL("image/png");
+
+    // A4 縦（mm）
+    const pdf = new jspdf.jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    // キャンバスのアスペクト比を維持して A4 にフィット
+    const imgWidth = pageWidth - 20; // 余白10mm×2
+    const ratio = finalCanvas.height / finalCanvas.width;
+    const imgHeight = imgWidth * ratio;
+
+    // 中央寄せ
+    const x = 10;
+    const y = 10;
+
+    pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+    pdf.save(title + ".pdf");
+  });
 }
