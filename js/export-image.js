@@ -127,41 +127,33 @@ function saveAsPNG() {
 }
 
 /* =========================================================
-   PDF 保存（PNG → PDF の軽量版）
+   PDF 保存（軽量化のみ）
 ========================================================= */
 
 function saveAsPDF() {
   const target = document.getElementById("canvas");
 
-  // ガイドテキストがあるなら一時的に非表示
-  const guide = document.getElementById("fc-guide");
-  const guideWasVisible = guide && guide.style.display !== "none";
-  if (guide) guide.style.display = "none";
-
   html2canvas(target, {
     backgroundColor: null,
-    scale: 1   // ★ 軽量化：2 → 1
+    scale: 1   // ★ 軽量化：2 → 1 に変更
   }).then(canvas => {
-
-    // ガイドを元に戻す
-    if (guide && guideWasVisible) guide.style.display = "block";
 
     const title = titleInput.value || "FlowCombo";
 
     // ★ PNG → JPEG（軽量化の核心）
     const imgData = canvas.toDataURL("image/jpeg", 0.85);
 
-    // A4 横向き PDF（px）
+    // A4 横向き（landscape）
     const pdf = new jspdf.jsPDF({
       orientation: "landscape",
-      unit: "px",
+      unit: "mm",
       format: "a4"
     });
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    const margin = 40;
+    const margin = 10;
     const availableWidth = pageWidth - margin * 2;
 
     const ratio = canvas.height / canvas.width;
@@ -170,17 +162,8 @@ function saveAsPDF() {
     const x = margin;
     const y = (pageHeight - imgHeight) / 2;
 
-    // タイトル帯
-    pdf.setFillColor(255, 255, 255);
-    pdf.rect(0, 0, pageWidth, 60, "F");
-
-    pdf.setFontSize(28);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text(title, margin, 40);
-
-    // 画像貼り付け（JPEG）
-    pdf.addImage(imgData, "JPEG", x, y + 20, availableWidth, imgHeight);
-
+    pdf.addImage(imgData, "JPEG", x, y, availableWidth, imgHeight);
     pdf.save(title + ".pdf");
   });
 }
+
