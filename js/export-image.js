@@ -88,12 +88,21 @@ function saveAsPDF() {
     });
   });
 
-  /* 矢印描画（FlowCombo の内部座標を使用） */
+  /* 矢印描画（SVG の line から座標を取得） */
   arrows.forEach(a => {
-    const x1 = a.x1;
-    const y1 = a.y1 + 80;
-    const x2 = a.x2;
-    const y2 = a.y2 + 80;
+    const line = a.line;
+    if (!line) return;
+
+    const x1 = Number(line.getAttribute("x1"));
+    const y1 = Number(line.getAttribute("y1")) + 80;
+    const x2 = Number(line.getAttribute("x2"));
+    const y2 = Number(line.getAttribute("y2")) + 80;
+
+    // 座標が不正ならスキップ
+    if (
+      isNaN(x1) || isNaN(y1) ||
+      isNaN(x2) || isNaN(y2)
+    ) return;
 
     // 線
     pdf.setDrawColor(0, 0, 0);
