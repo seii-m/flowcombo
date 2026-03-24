@@ -283,3 +283,50 @@ html, body {
   padding-right: 60px;
   margin-bottom: 40px;
 }
+
+.fc-dialog {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.fc-dialog.hidden {
+  display: none;
+}
+
+.fc-dialog-box {
+  background: white;
+  width: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+
+.fc-dialog-title {
+  padding: 16px;
+  font-size: 16px;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
+
+.fc-dialog-buttons button {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  border: none;
+  background: white;
+  border-bottom: 1px solid #eee;
+}
+
+.fc-dialog-buttons button:last-child {
+  border-bottom: none;
+}
+
+.fc-dialog-buttons button:hover {
+  background: #f0f0f0;
+}
+
