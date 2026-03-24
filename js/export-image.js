@@ -4,13 +4,13 @@
 ========================================================= */
 
 document.getElementById("save-image-btn").addEventListener("click", () => {
-  showDialog("画像として保存しますか？", [
+  showDialog("保存形式を選択してください", [
     {
       label: "PNG で保存",
       onClick: () => saveAsPNG()
     },
     {
-      label: "PDF で保存",
+      label: "PDF で保存（軽量・テキスト認識）",
       onClick: () => saveAsPDF()
     },
     {
@@ -21,103 +21,18 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
 });
 
 /* =========================================================
-   共通：キャンバスを PNG 化して返す
-========================================================= */
-
-function renderFlowAsCanvas() {
-  const target = document.getElementById("canvas");
-
-  return html2canvas(target, {
-    backgroundColor: null,
-    scale: 2
-  }).then(canvas => {
-    const ctx = canvas.getContext("2d");
-    const w = canvas.width;
-    const h = canvas.height;
-    const imgData = ctx.getImageData(0, 0, w, h).data;
-
-    let minX = w, minY = h, maxX = 0, maxY = 0;
-
-    // 透明以外のピクセル領域を検出
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const idx = (y * w + x) * 4;
-        const a = imgData[idx + 3];
-        if (a === 0) continue;
-
-        if (x < minX) minX = x;
-        if (y < minY) minY = y;
-        if (x > maxX) maxX = x;
-        if (y > maxY) maxY = y;
-      }
-    }
-
-    // 余白 20px を追加してトリミング
-    const pad = 20;
-    const trimW = (maxX - minX + 1) + pad * 2;
-    const trimH = (maxY - minY + 1) + pad * 2;
-
-    const trimmed = document.createElement("canvas");
-    trimmed.width = trimW;
-    trimmed.height = trimH;
-
-    const tctx = trimmed.getContext("2d");
-    tctx.drawImage(
-      canvas,
-      minX - pad,
-      minY - pad,
-      trimW,
-      trimH,
-      0,
-      0,
-      trimW,
-      trimH
-    );
-
-    // タイトル帯
-    const title = titleInput.value || "FlowCombo";
-    const fontSize = 32;
-    const titlePad = 20;
-    const titleHeight = fontSize + titlePad * 2;
-
-    const finalCanvas = document.createElement("canvas");
-    finalCanvas.width = trimmed.width;
-    finalCanvas.height = trimmed.height + titleHeight;
-
-    const fctx = finalCanvas.getContext("2d");
-    fctx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
-
-    // タイトル帯（白背景）
-    fctx.fillStyle = "rgba(255,255,255,1)";
-    fctx.fillRect(0, 0, finalCanvas.width, titleHeight);
-
-    // タイトル文字（黒字＋白縁）
-    fctx.font = `${fontSize}px sans-serif`;
-    fctx.textAlign = "left";
-    fctx.textBaseline = "top";
-
-    fctx.lineWidth = 4;
-    fctx.strokeStyle = "white";
-    fctx.strokeText(title, titlePad, titlePad);
-
-    fctx.fillStyle = "black";
-    fctx.fillText(title, titlePad, titlePad);
-
-    // 本体画像
-    fctx.drawImage(trimmed, 0, titleHeight);
-
-    return finalCanvas;
-  });
-}
-
-/* =========================================================
-   PNG 保存
+   PNG 保存（従来の画像方式）
 ========================================================= */
 
 function saveAsPNG() {
-  renderFlowAsCanvas().then(finalCanvas => {
+  const target = document.getElementById("canvas");
+
+  html2canvas(target, {
+    backgroundColor: null,
+    scale: 2
+  }).then(canvas => {
     const title = titleInput.value || "FlowCombo";
-    const url = finalCanvas.toDataURL("image/png");
+    const url = canvas.toDataURL("image/png");
 
     const a = document.createElement("a");
     a.href = url;
@@ -127,37 +42,91 @@ function saveAsPNG() {
 }
 
 /* =========================================================
-   PDF 保存（jsPDF）
+   PDF 保存（ベクター＋テキスト方式）
 ========================================================= */
 
 function saveAsPDF() {
-  renderFlowAsCanvas().then(finalCanvas => {
-    const title = titleInput.value || "FlowCombo";
+  const title = titleInput.value || "FlowCombo";
 
-    const imgData = finalCanvas.toDataURL("image/png");
-
-    // A4 横向き（landscape）
-    const pdf = new jspdf.jsPDF({
-      orientation: "landscape",
-      unit: "mm",
-      format: "a4"
-    });
-
-    const pageWidth = pdf.internal.pageSize.getWidth();   // 297mm
-    const pageHeight = pdf.internal.pageSize.getHeight(); // 210mm
-
-    // 余白 10mm
-    const margin = 10;
-
-    // キャンバスのアスペクト比を維持して横向き A4 にフィット
-    const availableWidth = pageWidth - margin * 2;
-    const ratio = finalCanvas.height / finalCanvas.width;
-    const imgHeight = availableWidth * ratio;
-
-    const x = margin;
-    const y = (pageHeight - imgHeight) / 2; // 縦方向は中央寄せ
-
-    pdf.addImage(imgData, "PNG", x, y, availableWidth, imgHeight);
-    pdf.save(title + ".pdf");
+  // A4 横向き PDF（px 単位）
+  const pdf = new jspdf.jsPDF({
+    orientation: "landscape",
+    unit: "px",
+    format: "a4"
   });
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+
+  const margin = 40;
+
+  /* ─────────────────────────────
+     タイトル帯
+  ───────────────────────────── */
+  pdf.setFillColor(255, 255, 255);
+  pdf.rect(0, 0, pageWidth, 60, "F");
+
+  pdf.setFontSize(28);
+  pdf.setTextColor(0, 0, 0);
+  pdf.text(title, margin, 40);
+
+  /* ─────────────────────────────
+     ノード描画（テキスト＋枠）
+  ───────────────────────────── */
+  pdf.setFontSize(16);
+
+  nodes.forEach(node => {
+    const x = parseInt(node.style.left);
+    const y = parseInt(node.style.top) + 80; // タイトル帯ぶん下げる
+
+    const w = node.offsetWidth;
+    const h = node.offsetHeight;
+
+    // ノード枠
+    pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(1.2);
+    pdf.rect(x, y, w, h);
+
+    // テキスト（改行対応）
+    const lines = node.innerText.split("\n");
+    let ty = y + 22;
+
+    lines.forEach(line => {
+      pdf.text(line, x + 10, ty);
+      ty += 20;
+    });
+  });
+
+  /* ─────────────────────────────
+     矢印描画（ベクター線＋三角形）
+  ───────────────────────────── */
+  arrows.forEach(a => {
+    const x1 = a.x1;
+    const y1 = a.y1 + 80;
+    const x2 = a.x2;
+    const y2 = a.y2 + 80;
+
+    // 線
+    pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(1.5);
+    pdf.line(x1, y1, x2, y2);
+
+    // 矢印（三角形）
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const size = 10;
+
+    const ax = x2 - size * Math.cos(angle - Math.PI / 6);
+    const ay = y2 - size * Math.sin(angle - Math.PI / 6);
+
+    const bx = x2 - size * Math.cos(angle + Math.PI / 6);
+    const by = y2 - size * Math.sin(angle + Math.PI / 6);
+
+    pdf.setFillColor(0, 0, 0);
+    pdf.triangle(x2, y2, ax, ay, bx, by, "F");
+  });
+
+  /* ─────────────────────────────
+     保存
+  ───────────────────────────── */
+  pdf.save(title + ".pdf");
 }
