@@ -136,26 +136,28 @@ function saveAsPDF() {
 
     const imgData = finalCanvas.toDataURL("image/png");
 
-    // A4 縦（mm）
+    // A4 横向き（landscape）
     const pdf = new jspdf.jsPDF({
-      orientation: "portrait",
+      orientation: "landscape",
       unit: "mm",
       format: "a4"
     });
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageWidth = pdf.internal.pageSize.getWidth();   // 297mm
+    const pageHeight = pdf.internal.pageSize.getHeight(); // 210mm
 
-    // キャンバスのアスペクト比を維持して A4 にフィット
-    const imgWidth = pageWidth - 20; // 余白10mm×2
+    // 余白 10mm
+    const margin = 10;
+
+    // キャンバスのアスペクト比を維持して横向き A4 にフィット
+    const availableWidth = pageWidth - margin * 2;
     const ratio = finalCanvas.height / finalCanvas.width;
-    const imgHeight = imgWidth * ratio;
+    const imgHeight = availableWidth * ratio;
 
-    // 中央寄せ
-    const x = 10;
-    const y = 10;
+    const x = margin;
+    const y = (pageHeight - imgHeight) / 2; // 縦方向は中央寄せ
 
-    pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+    pdf.addImage(imgData, "PNG", x, y, availableWidth, imgHeight);
     pdf.save(title + ".pdf");
   });
 }
