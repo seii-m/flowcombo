@@ -29,7 +29,7 @@ function renderFlowAsCanvas() {
 
   return html2canvas(target, {
     backgroundColor: null,
-    scale: 1
+    scale: 2
   }).then(canvas => {
     const ctx = canvas.getContext("2d");
     const w = canvas.width;
