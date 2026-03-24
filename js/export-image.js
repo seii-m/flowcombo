@@ -10,7 +10,7 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
       onClick: () => saveAsPNG()
     },
     {
-      label: "PDF で保存（軽量・テキスト認識）",
+      label: "PDF で保存",
       onClick: () => saveAsPDF()
     },
     {
@@ -48,7 +48,6 @@ function saveAsPNG() {
 function saveAsPDF() {
   const title = titleInput.value || "FlowCombo";
 
-  // A4 横向き PDF（px 単位）
   const pdf = new jspdf.jsPDF({
     orientation: "landscape",
     unit: "px",
@@ -57,37 +56,29 @@ function saveAsPDF() {
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-
   const margin = 40;
 
-  /* ─────────────────────────────
-     タイトル帯
-  ───────────────────────────── */
+  /* タイトル帯 */
   pdf.setFillColor(255, 255, 255);
   pdf.rect(0, 0, pageWidth, 60, "F");
 
   pdf.setFontSize(28);
-  pdf.setTextColor(0, 0, 0);
   pdf.text(title, margin, 40);
 
-  /* ─────────────────────────────
-     ノード描画（テキスト＋枠）
-  ───────────────────────────── */
+  /* ノード描画 */
   pdf.setFontSize(16);
 
   nodes.forEach(node => {
     const x = parseInt(node.style.left);
-    const y = parseInt(node.style.top) + 80; // タイトル帯ぶん下げる
+    const y = parseInt(node.style.top) + 80;
 
     const w = node.offsetWidth;
     const h = node.offsetHeight;
 
-    // ノード枠
     pdf.setDrawColor(0, 0, 0);
     pdf.setLineWidth(1.2);
     pdf.rect(x, y, w, h);
 
-    // テキスト（改行対応）
     const lines = node.innerText.split("\n");
     let ty = y + 22;
 
@@ -97,9 +88,7 @@ function saveAsPDF() {
     });
   });
 
-  /* ─────────────────────────────
-     矢印描画（ベクター線＋三角形）
-  ───────────────────────────── */
+  /* 矢印描画（FlowCombo の内部座標を使用） */
   arrows.forEach(a => {
     const x1 = a.x1;
     const y1 = a.y1 + 80;
@@ -125,8 +114,6 @@ function saveAsPDF() {
     pdf.triangle(x2, y2, ax, ay, bx, by, "F");
   });
 
-  /* ─────────────────────────────
-     保存
-  ───────────────────────────── */
   pdf.save(title + ".pdf");
 }
+
