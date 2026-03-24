@@ -9,10 +9,10 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
       label: "PNG で保存",
       onClick: () => saveAsPNG()
     },
-    {
+    /*{
       label: "PDF で保存",
       onClick: () => saveAsPDF()
-    },
+    },*/
     {
       label: "キャンセル",
       onClick: () => {}
