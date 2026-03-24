@@ -93,11 +93,11 @@ function saveAsPDF() {
     const line = a.line;
     if (!line) return;
 
-    const x1 = Number(line.getAttribute("x1"));
-    const y1 = Number(line.getAttribute("y1")) + 80;
-    const x2 = Number(line.getAttribute("x2"));
-    const y2 = Number(line.getAttribute("y2")) + 80;
-
+    const x1 = arrow.x1;
+    const y1 = arrow.y1 + 80;
+    const x2 = arrow.x2;
+    const y2 = arrow.y2 + 80;
+    
     // 座標が不正ならスキップ
     if (
       isNaN(x1) || isNaN(y1) ||
