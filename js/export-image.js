@@ -1,15 +1,34 @@
 /* =========================================================
    export-image.js
-   フロー画像保存（html2canvas → トリミング → タイトル帯）
+   PNG / PDF / キャンセル の 3択ダイアログ対応版
 ========================================================= */
 
 document.getElementById("save-image-btn").addEventListener("click", () => {
-  if (!confirm("フローを画像として保存しますか？")) return;
+  showDialog("画像として保存しますか？", [
+    {
+      label: "PNG で保存",
+      onClick: () => saveAsPNG()
+    },
+    {
+      label: "PDF で保存",
+      onClick: () => saveAsPDF()   // 後で実装
+    },
+    {
+      label: "キャンセル",
+      onClick: () => {}
+    }
+  ]);
+});
 
+/* =========================================================
+   PNG 保存（元の処理を関数化）
+========================================================= */
+
+function saveAsPNG() {
   const target = document.getElementById("canvas");
 
   html2canvas(target, {
-    backgroundColor: null, // 背景透過
+    backgroundColor: null,
     scale: 2
   }).then(canvas => {
 
@@ -20,14 +39,11 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
 
     let minX = w, minY = h, maxX = 0, maxY = 0;
 
-    /* ─────────────────────────────
-       透明以外のピクセル領域を検出
-    ───────────────────────────── */
+    // 透明以外のピクセル領域を検出
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const idx = (y * w + x) * 4;
         const a = imgData[idx + 3];
-
         if (a === 0) continue;
 
         if (x < minX) minX = x;
@@ -37,11 +53,8 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
       }
     }
 
-    /* ─────────────────────────────
-       余白 20px を追加してトリミング
-    ───────────────────────────── */
+    // 余白 20px を追加してトリミング
     const pad = 20;
-
     const trimW = (maxX - minX + 1) + pad * 2;
     const trimH = (maxY - minY + 1) + pad * 2;
 
@@ -50,7 +63,6 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
     trimmed.height = trimH;
 
     const tctx = trimmed.getContext("2d");
-
     tctx.drawImage(
       canvas,
       minX - pad,
@@ -63,9 +75,7 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
       trimH
     );
 
-    /* ─────────────────────────────
-       タイトル帯の描画
-    ───────────────────────────── */
+    // タイトル帯
     const title = titleInput.value || "FlowCombo";
     const fontSize = 32;
     const titlePad = 20;
@@ -94,16 +104,22 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
     fctx.fillStyle = "black";
     fctx.fillText(title, titlePad, titlePad);
 
-    // 本体画像を下に描画
+    // 本体画像
     fctx.drawImage(trimmed, 0, titleHeight);
 
-    /* ─────────────────────────────
-       PNG 保存
-    ───────────────────────────── */
+    // PNG 保存
     const url = finalCanvas.toDataURL("image/png");
     const a = document.createElement("a");
     a.href = url;
     a.download = title + ".png";
     a.click();
   });
-});
+}
+
+/* =========================================================
+   PDF 保存（後で実装）
+========================================================= */
+
+function saveAsPDF() {
+  alert("PDF 保存はまだ実装していません");
+}
