@@ -42,84 +42,61 @@ function saveAsPNG() {
 }
 
 /* =========================================================
-   PDF 保存（ベクター＋テキスト方式）
+   PDF 保存（PNG → PDF の軽量版）
 ========================================================= */
 
 function saveAsPDF() {
   const title = titleInput.value || "FlowCombo";
+  const target = document.getElementById("canvas");
 
-  const pdf = new jspdf.jsPDF({
-    orientation: "landscape",
-    unit: "px",
-    format: "a4"
-  });
+  // ガイドテキストがあるなら一時的に非表示
+  const guide = document.getElementById("fc-guide");
+  const guideWasVisible = guide && guide.style.display !== "none";
+  if (guide) guide.style.display = "none";
 
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 40;
+  html2canvas(target, {
+    backgroundColor: null,
+    scale: 1   // ★ 軽量化：2 → 1
+  }).then(canvas => {
 
-  /* タイトル帯 */
-  pdf.setFillColor(255, 255, 255);
-  pdf.rect(0, 0, pageWidth, 60, "F");
+    // ガイドを元に戻す
+    if (guide && guideWasVisible) guide.style.display = "block";
 
-  pdf.setFontSize(28);
-  pdf.text(title, margin, 40);
+    // JPEG に変換（PNG より軽い）
+    const imgData = canvas.toDataURL("image/jpeg", 0.85);
 
-  /* ノード描画 */
-  pdf.setFontSize(16);
-
-  nodes.forEach(node => {
-    const x = parseInt(node.style.left);
-    const y = parseInt(node.style.top) + 80;
-
-    const w = node.offsetWidth;
-    const h = node.offsetHeight;
-
-    pdf.setDrawColor(0, 0, 0);
-    pdf.setLineWidth(1.2);
-    pdf.rect(x, y, w, h);
-
-    const lines = node.innerText.split("\n");
-    let ty = y + 22;
-
-    lines.forEach(line => {
-      pdf.text(line, x + 10, ty);
-      ty += 20;
+    // A4 横向き PDF（px）
+    const pdf = new jspdf.jsPDF({
+      orientation: "landscape",
+      unit: "px",
+      format: "a4"
     });
-  });
 
-  /* 矢印描画（CSS 矢印の内部座標を使用） */
-  arrows.forEach(a => {
-    // 座標が保存されていない場合はスキップ
-    if (
-      a.x1 == null || a.y1 == null ||
-      a.x2 == null || a.y2 == null
-    ) return;
-  
-    const x1 = a.x1;
-    const y1 = a.y1 + 80;
-    const x2 = a.x2;
-    const y2 = a.y2 + 80;
-  
-    // 線
-    pdf.setDrawColor(0, 0, 0);
-    pdf.setLineWidth(1.5);
-    pdf.line(x1, y1, x2, y2);
-  
-    // 矢印（三角形）
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    const size = 10;
-  
-    const ax = x2 - size * Math.cos(angle - Math.PI / 6);
-    const ay = y2 - size * Math.sin(angle - Math.PI / 6);
-  
-    const bx = x2 - size * Math.cos(angle + Math.PI / 6);
-    const by = y2 - size * Math.sin(angle + Math.PI / 6);
-  
-    pdf.setFillColor(0, 0, 0);
-    pdf.triangle(x2, y2, ax, ay, bx, by, "F");
-  });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
-  pdf.save(title + ".pdf");
+    const margin = 40;
+    const availableWidth = pageWidth - margin * 2;
+
+    const ratio = canvas.height / canvas.width;
+    const imgHeight = availableWidth * ratio;
+
+    const x = margin;
+    const y = (pageHeight - imgHeight) / 2;
+
+    // タイトル帯
+    pdf.setFillColor(255, 255, 255);
+    pdf.rect(0, 0, pageWidth, 60, "F");
+
+    pdf.setFontSize(28);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(title, margin, 40);
+
+    // 画像貼り付け
+    pdf.addImage(imgData, "JPEG", x, y + 20, availableWidth, imgHeight);
+
+    pdf.save(title + ".pdf");
+  });
 }
+
 
