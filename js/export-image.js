@@ -5,10 +5,14 @@
 
 document.getElementById("save-image-btn").addEventListener("click", () => {
   showDialog("画像として保存しますか？", [
-    {
-      label: "PNG で保存",
-      onClick: () => saveAsPNG()
-    },
+     {
+       label: "PNG(白背景)で保存",
+       onClick: () => saveAsPNG(true)
+     },
+     {
+       label: "PNG(透過)で保存",
+       onClick: () => saveAsPNG(false)
+     },
     /*{
       label: "PDF で保存",
       onClick: () => saveAsPDF()
@@ -24,13 +28,24 @@ document.getElementById("save-image-btn").addEventListener("click", () => {
    共通：キャンバスを PNG 化して返す
 ========================================================= */
 
-function renderFlowAsCanvas() {
+function renderFlowAsCanvas(useWhiteBackground) {
   const target = document.getElementById("canvas");
 
   return html2canvas(target, {
     backgroundColor: null,
     scale: 2
   }).then(canvas => {
+    if (useWhiteBackground) {
+      const ctx = canvas.getContext("2d");
+      const white = document.createElement("canvas");
+      white.width = canvas.width;
+      white.height = canvas.height;
+      const wctx = white.getContext("2d");
+      wctx.fillStyle = "#ffffff";
+      wctx.fillRect(0, 0, white.width, white.height);
+      wctx.drawImage(canvas, 0, 0);
+      canvas = white;
+    }
     const ctx = canvas.getContext("2d");
     const w = canvas.width;
     const h = canvas.height;
@@ -114,8 +129,8 @@ function renderFlowAsCanvas() {
    PNG 保存
 ========================================================= */
 
-function saveAsPNG() {
-  renderFlowAsCanvas().then(finalCanvas => {
+function saveAsPNG(useWhiteBackground) {
+  renderFlowAsCanvas(useWhiteBackground).then(finalCanvas => {
     const title = titleInput.value || "FlowCombo";
     const url = finalCanvas.toDataURL("image/png");
 
