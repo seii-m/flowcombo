@@ -88,37 +88,34 @@ function saveAsPDF() {
     });
   });
 
-  /* 矢印描画（SVG の line から座標を取得） */
+  /* 矢印描画（CSS 矢印の内部座標を使用） */
   arrows.forEach(a => {
-    const line = a.line;
-    if (!line) return;
-
-    const x1 = arrow.x1;
-    const y1 = arrow.y1 + 80;
-    const x2 = arrow.x2;
-    const y2 = arrow.y2 + 80;
-    
-    // 座標が不正ならスキップ
+    // 座標が保存されていない場合はスキップ
     if (
-      isNaN(x1) || isNaN(y1) ||
-      isNaN(x2) || isNaN(y2)
+      a.x1 == null || a.y1 == null ||
+      a.x2 == null || a.y2 == null
     ) return;
-
+  
+    const x1 = a.x1;
+    const y1 = a.y1 + 80;
+    const x2 = a.x2;
+    const y2 = a.y2 + 80;
+  
     // 線
     pdf.setDrawColor(0, 0, 0);
     pdf.setLineWidth(1.5);
     pdf.line(x1, y1, x2, y2);
-
+  
     // 矢印（三角形）
     const angle = Math.atan2(y2 - y1, x2 - x1);
     const size = 10;
-
+  
     const ax = x2 - size * Math.cos(angle - Math.PI / 6);
     const ay = y2 - size * Math.sin(angle - Math.PI / 6);
-
+  
     const bx = x2 - size * Math.cos(angle + Math.PI / 6);
     const by = y2 - size * Math.sin(angle + Math.PI / 6);
-
+  
     pdf.setFillColor(0, 0, 0);
     pdf.triangle(x2, y2, ax, ay, bx, by, "F");
   });
